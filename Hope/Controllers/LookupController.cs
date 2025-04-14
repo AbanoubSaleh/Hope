@@ -1,7 +1,9 @@
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Application.LookUps.Dtos;
+using Hope.Application.LookUps.Queries.GetCentersByGovernmentId;
 using Hope.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -14,10 +16,12 @@ namespace Hope.Api.Controllers
     public class LookupController : ControllerBase
     {
         private readonly ILookupService _lookupService;
+        private readonly IMediator _mediator;
 
-        public LookupController(ILookupService lookupService)
+        public LookupController(ILookupService lookupService, IMediator mediator)
         {
             _lookupService = lookupService;
+            _mediator = mediator;
         }
 
         [HttpGet("governments")]
@@ -32,6 +36,26 @@ namespace Hope.Api.Controllers
                 PhoneCode = g.PhoneCode
             }).ToList();
             return Ok(governments);
+        }
+
+        [HttpGet("governments/{governmentId}/centers")]
+        [ProducesResponseType(typeof(Result<IEnumerable<Center>>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        [ProducesResponseType(typeof(Result), 404)]
+        public async Task<ActionResult<Result<IEnumerable<Center>>>> GetCentersByGovernmentId(int governmentId)
+        {
+            var result = await _mediator.Send(new GetCentersByGovernmentIdQuery { GovernmentId = governmentId });
+            
+            if (!result.Succeeded)
+            {
+                if (result.Message.Contains("not found"))
+                {
+                    return NotFound(result);
+                }
+                return BadRequest(result);
+            }
+            
+            return Ok(result);
         }
     }
 }

@@ -7,7 +7,6 @@ namespace Hope.Infrastructure.Persistence.Seeding
         public static void Seed(this ModelBuilder modelBuilder)
         {
             modelBuilder.SeedGovernments();
-            // Add other seeders here as needed
         }
     }
 }

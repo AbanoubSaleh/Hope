@@ -78,6 +78,10 @@ namespace Hope.Infrastructure
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ILookupService, LookupService>();
 
+            // Add this to the AddInfrastructure method
+            services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<IMissingPersonService, MissingPersonService>();
+
             return services;
         }
     }
