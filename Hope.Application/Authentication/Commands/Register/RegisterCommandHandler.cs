@@ -1,6 +1,7 @@
 using Hope.Application.Authentication.DTOs;
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
+using Hope.Domain.Entities;
 using Hope.Resources;
 using MediatR;
 using Microsoft.AspNetCore.WebUtilities;
@@ -13,21 +14,30 @@ namespace Hope.Application.Authentication.Commands.Register
     {
         private readonly IAuthService _authService;
         private readonly IEmailService _emailService;
+        private readonly ILookupService _lookupService;
         private readonly IStringLocalizer<RegisterCommandHandler> _localizer;
 
         public RegisterCommandHandler(
             IAuthService authService,
             IEmailService emailService,
+            ILookupService lookupService,
             IStringLocalizer<RegisterCommandHandler> localizer)
         {
             _authService = authService;
             _emailService = emailService;
+            _lookupService = lookupService;
             _localizer = localizer;
         }
 
         public async Task<Result<AuthResponseDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-            var result = await _authService.RegisterUserAsync(request.Email, request.Password, request.FirstName, request.LastName);
+            // Check if the government ID exists
+            if (!await _lookupService.ExistsAsync<Government>(request.GovernmentId))
+            {
+                return Result<AuthResponseDto>.Failure(Messages.GovernmentIdNotFound);
+            }
+
+            var result = await _authService.RegisterUserAsync(request.Email, request.Password, request.FirstName, request.LastName,request.GovernmentId,request.PhoneNumber);
 
             if (!result.Succeeded)
             {

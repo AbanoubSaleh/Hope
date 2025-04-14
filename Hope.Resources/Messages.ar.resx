@@ -187,4 +187,13 @@
   <data name="LoginSuccess" xml:space="preserve">
     <value>تم تسجيل الدخول بنجاح</value>
   </data>
+  <data name="PhoneNumberRequired" xml:space="preserve">
+    <value>رقم الهاتف مطلوب</value>
+  </data>
+  <data name="GovernmentIdRequired" xml:space="preserve">
+    <value>يرجى اختيار المحافظة</value>
+  </data>
+  <data name="GovernmentIdNotFound" xml:space="preserve">
+    <value>المحافظة غير موجودة</value>
+  </data>
 </root>

@@ -19,6 +19,12 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
             .NotEmpty().WithMessage(Messages.EmailRequired)
             .EmailAddress().WithMessage(Messages.EmailInvalid);
 
+        RuleFor(x => x.GovernmentId)
+            .NotEmpty().WithMessage(Messages.GovernmentIdRequired);
+
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage(Messages.PhoneNumberRequired);
+
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage(Messages.PasswordRequired)
             .MinimumLength(8).WithMessage(Messages.PasswordTooShort)

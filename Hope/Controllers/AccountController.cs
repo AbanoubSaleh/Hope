@@ -23,16 +23,8 @@ namespace Hope.Api.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model, CancellationToken cancellationToken)
+        public async Task<IActionResult> Register([FromBody] RegisterCommand command, CancellationToken cancellationToken)
         {
-            var command = new RegisterCommand
-            {
-                Email = model.Email,
-                Password = model.Password,
-                ConfirmPassword = model.ConfirmPassword,
-                FirstName = model.FirstName,
-                LastName = model.LastName
-            };
 
             var result = await _mediator.Send(command, cancellationToken);
 

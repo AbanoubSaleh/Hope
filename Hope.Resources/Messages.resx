@@ -180,4 +180,13 @@
   <data name="LoginSuccess" xml:space="preserve">
     <value>Login successful</value>
   </data>
+  <data name="PhoneNumberRequired" xml:space="preserve">
+    <value>Phone number is required</value>
+  </data>
+  <data name="GovernmentIdRequired" xml:space="preserve">
+    <value>Government is required</value>
+  </data>
+  <data name="GovernmentIdNotFound" xml:space="preserve">
+    <value>Government Not Found</value>
+  </data>
 </root>

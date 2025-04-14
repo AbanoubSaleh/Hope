@@ -7,7 +7,7 @@ namespace Hope.Application.Common.Interfaces
     public interface IAuthService
     {
         Task<(string token, string refreshToken)> GenerateJwtToken(ApplicationUser user);
-        Task<Result<ApplicationUser>> RegisterUserAsync(string email, string password, string firstName, string lastName);
+        Task<Result<ApplicationUser>> RegisterUserAsync(string email, string password, string firstName, string lastName, int governmentId, string phoneNumber);
         Task<Result<ApplicationUser>> LoginAsync(string email, string password);
         Task<Result> ConfirmEmailAsync(string userId, string token);
         Task<Result> ForgotPasswordAsync(string email);

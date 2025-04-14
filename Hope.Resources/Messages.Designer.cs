@@ -115,6 +115,24 @@ namespace Hope.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Government Not Found.
+        /// </summary>
+        public static string GovernmentIdNotFound {
+            get {
+                return ResourceManager.GetString("GovernmentIdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Government is required.
+        /// </summary>
+        public static string GovernmentIdRequired {
+            get {
+                return ResourceManager.GetString("GovernmentIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Last name is required.
         /// </summary>
         public static string LastNameRequired {
@@ -219,6 +237,15 @@ namespace Hope.Resources {
         public static string PasswordTooShort {
             get {
                 return ResourceManager.GetString("PasswordTooShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone number is required.
+        /// </summary>
+        public static string PhoneNumberRequired {
+            get {
+                return ResourceManager.GetString("PhoneNumberRequired", resourceCulture);
             }
         }
         

@@ -33,7 +33,7 @@ namespace Hope.Infrastructure.Identity
             _emailService = emailService;
         }
 
-        public async Task<Result<ApplicationUser>> RegisterUserAsync(string email, string password, string firstName, string lastName)
+        public async Task<Result<ApplicationUser>> RegisterUserAsync(string email, string password, string firstName, string lastName,int governmentId,string phoneNumber)
         {
             var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
@@ -47,7 +47,9 @@ namespace Hope.Infrastructure.Identity
                 Email = email,
                 FirstName = firstName,
                 LastName = lastName,
-                EmailConfirmed = false
+                EmailConfirmed = false,
+                GovernmentId= governmentId,
+                PhoneNumber= phoneNumber
             };
 
             var result = await _userManager.CreateAsync(user, password);
