@@ -133,7 +133,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("GovernmentId");
 
-                    b.ToTable("Centers");
+                    b.ToTable("Centers", (string)null);
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.EmailConfirmationCode", b =>
@@ -166,7 +166,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EmailConfirmationCodes");
+                    b.ToTable("EmailConfirmationCodes", (string)null);
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.Government", b =>
@@ -191,7 +191,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Governments");
+                    b.ToTable("Governments", (string)null);
 
                     b.HasData(
                         new
@@ -416,7 +416,7 @@ namespace Hope.Infrastructure.Migrations
                     b.HasIndex("ReportId")
                         .IsUnique();
 
-                    b.ToTable("MissingPersons");
+                    b.ToTable("MissingPersons", (string)null);
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.MissingPersonImage", b =>
@@ -436,7 +436,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("MissingPersonId");
 
-                    b.ToTable("MissingPersonImages");
+                    b.ToTable("MissingPersonImages", (string)null);
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.MissingThing", b =>
@@ -464,7 +464,7 @@ namespace Hope.Infrastructure.Migrations
                     b.HasIndex("ReportId")
                         .IsUnique();
 
-                    b.ToTable("MissingThings");
+                    b.ToTable("MissingThings", (string)null);
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.MissingThingImage", b =>
@@ -484,7 +484,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("MissingThingId");
 
-                    b.ToTable("MissingThingImages");
+                    b.ToTable("MissingThingImages", (string)null);
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.Report", b =>
@@ -526,7 +526,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Reports", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
