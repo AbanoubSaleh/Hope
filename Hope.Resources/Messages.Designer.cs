@@ -275,5 +275,32 @@ namespace Hope.Resources {
                 return ResourceManager.GetString("UserIdRequired", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirmation code is required.
+        /// </summary>
+        public static string ConfirmationCodeRequired {
+            get {
+                return ResourceManager.GetString("ConfirmationCodeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirmation code must be 6 digits.
+        /// </summary>
+        public static string ConfirmationCodeLength {
+            get {
+                return ResourceManager.GetString("ConfirmationCodeLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid confirmation code.
+        /// </summary>
+        public static string InvalidConfirmationCode {
+            get {
+                return ResourceManager.GetString("InvalidConfirmationCode", resourceCulture);
+            }
+        }
     }
 }

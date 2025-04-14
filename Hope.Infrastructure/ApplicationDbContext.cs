@@ -12,6 +12,10 @@ namespace Hope.Infrastructure
         {
         }
         public DbSet<Government> Governments { get; set; }
+        
+        // Add DbSet for EmailConfirmationCode entity
+        public DbSet<EmailConfirmationCode> EmailConfirmationCodes { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -22,6 +26,13 @@ namespace Hope.Infrastructure
                 .WithMany(g => g.Users)
                 .HasForeignKey(u => u.GovernmentId)
                 .IsRequired(false);
+            
+            // Configure EmailConfirmationCode entity
+            builder.Entity<EmailConfirmationCode>()
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             
             // Seed data
             builder.Seed();

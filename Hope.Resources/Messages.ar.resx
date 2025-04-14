@@ -196,4 +196,14 @@
   <data name="GovernmentIdNotFound" xml:space="preserve">
     <value>المحافظة غير موجودة</value>
   </data>
+  
+  <data name="ConfirmationCodeRequired" xml:space="preserve">
+    <value>رمز التأكيد مطلوب</value>
+  </data>
+  <data name="ConfirmationCodeLength" xml:space="preserve">
+    <value>يجب أن يتكون رمز التأكيد من 6 أرقام</value>
+  </data>
+  <data name="InvalidConfirmationCode" xml:space="preserve">
+    <value>رمز التأكيد غير صالح</value>
+  </data>
 </root>

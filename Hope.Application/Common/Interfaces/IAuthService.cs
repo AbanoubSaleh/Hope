@@ -17,5 +17,11 @@ namespace Hope.Application.Common.Interfaces
         Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user);
         Task<Result<ClaimsPrincipal>> ValidateJwtToken(string token);
         Task<Result<(string token, string refreshToken)>> RefreshTokenAsync(string token, string refreshToken);
+        
+        // New methods for confirmation code functionality
+        // Update the method signatures to be more explicit about their database nature
+        Task StoreEmailConfirmationCodeAsync(string userId, string confirmationCode, string token);
+        Task<Result<string>> GetTokenByConfirmationCodeAsync(string userId, string confirmationCode);
+        Task RemoveConfirmationCodeAsync(string userId);
     }
 }

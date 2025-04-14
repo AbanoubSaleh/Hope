@@ -16,7 +16,6 @@ namespace Hope.Infrastructure.Services
             _configuration = configuration;
             _logger = logger;
         }
-
         public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = true)
         {
             try
@@ -109,5 +108,21 @@ namespace Hope.Infrastructure.Services
 
             await SendEmailAsync(email, subject, body);
         }
+
+        public async Task SendEmailConfirmationCodeAsync(string to, string confirmationCode)
+        {
+            var subject = "Confirm your email address";
+            var body = $@"
+                <h1>Welcome to Hope!</h1>
+                <p>Thank you for registering. Please confirm your email address by entering the following code:</p>
+                <h2 style='background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 24px;'>{confirmationCode}</h2>
+                <p>This code will expire in 24 hours.</p>
+                <p>If you did not request this email, please ignore it.</p>
+            ";
+            
+            await SendEmailAsync(to, subject, body);
+        }
+
+
     }
 }

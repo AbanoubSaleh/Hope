@@ -189,4 +189,13 @@
   <data name="GovernmentIdNotFound" xml:space="preserve">
     <value>Government Not Found</value>
   </data>
+  <data name="ConfirmationCodeRequired" xml:space="preserve">
+    <value>Confirmation code is required</value>
+  </data>
+  <data name="ConfirmationCodeLength" xml:space="preserve">
+    <value>Confirmation code must be 6 digits</value>
+  </data>
+  <data name="InvalidConfirmationCode" xml:space="preserve">
+    <value>Invalid confirmation code</value>
+  </data>
 </root>

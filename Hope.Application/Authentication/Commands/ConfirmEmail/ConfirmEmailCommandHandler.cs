@@ -2,8 +2,6 @@ using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Resources;
 using MediatR;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
 
 namespace Hope.Application.Authentication.Commands.ConfirmEmail
 {
@@ -18,16 +16,24 @@ namespace Hope.Application.Authentication.Commands.ConfirmEmail
 
         public async Task<Result> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
         {
-            // Decode the token
-            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+            // Retrieve the stored token associated with the confirmation code
+            var tokenResult = await _authService.GetTokenByConfirmationCodeAsync(request.UserId, request.ConfirmationCode);
             
-            // Confirm the email
-            var result = await _authService.ConfirmEmailAsync(request.UserId, decodedToken);
+            if (!tokenResult.Succeeded)
+            {
+                return Result.Failure(Messages.InvalidConfirmationCode);
+            }
+            
+            // Confirm the email using the retrieved token
+            var result = await _authService.ConfirmEmailAsync(request.UserId, tokenResult.Data);
             
             if (!result.Succeeded)
             {
                 return Result.Failure(Messages.EmailConfirmationFailed);
             }
+            
+            // Mark the confirmation code as used
+            await _authService.RemoveConfirmationCodeAsync(request.UserId);
             
             return Result.Success(Messages.EmailConfirmationSuccessful);
         }

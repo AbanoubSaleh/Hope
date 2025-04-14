@@ -62,7 +62,7 @@ namespace Hope.Api.Controllers
             var command = new ConfirmEmailCommand
             {
                 UserId = userId,
-                Token = token
+                ConfirmationCode = token
             };
 
             var result = await _mediator.Send(command, cancellationToken);

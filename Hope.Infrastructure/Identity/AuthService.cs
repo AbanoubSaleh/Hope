@@ -1,7 +1,9 @@
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Domain.Entities;
+using Hope.Resources;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -18,19 +20,22 @@ namespace Hope.Infrastructure.Identity
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
         private readonly IEmailService _emailService;
+        private readonly ApplicationDbContext _dbContext;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IConfiguration configuration,
             ILogger<AuthService> logger,
-            IEmailService emailService)
+            IEmailService emailService,
+            ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _logger = logger;
             _emailService = emailService;
+            _dbContext = dbContext;
         }
 
         public async Task<Result<ApplicationUser>> RegisterUserAsync(string email, string password, string firstName, string lastName,int governmentId,string phoneNumber)
@@ -329,6 +334,72 @@ namespace Hope.Infrastructure.Identity
             using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
+        }
+
+        public async Task StoreEmailConfirmationCodeAsync(string userId, string confirmationCode, string token)
+        {
+            // First, invalidate any existing codes for this user
+            var existingCodes = await _dbContext.EmailConfirmationCodes
+                .Where(c => c.UserId == userId && !c.IsUsed)
+                .ToListAsync();
+            
+            foreach (var code in existingCodes)
+            {
+                code.IsUsed = true;
+            }
+            
+            // Create a new confirmation code
+            var emailConfirmationCode = new EmailConfirmationCode
+            {
+                UserId = userId,
+                Code = confirmationCode,
+                Token = token,
+                ExpiryTime = DateTime.UtcNow.AddHours(24),
+                IsUsed = false
+            };
+            
+            _dbContext.EmailConfirmationCodes.Add(emailConfirmationCode);
+            await _dbContext.SaveChangesAsync();
+            
+            _logger.LogInformation("Stored confirmation code for user {UserId}", userId);
+        }
+
+        public async Task<Result<string>> GetTokenByConfirmationCodeAsync(string userId, string confirmationCode)
+        {
+            var code = await _dbContext.EmailConfirmationCodes
+                .Where(c => c.UserId == userId && c.Code == confirmationCode && !c.IsUsed)
+                .OrderByDescending(c => c.ExpiryTime)
+                .FirstOrDefaultAsync();
+            
+            if (code == null)
+            {
+                _logger.LogWarning("No valid confirmation code found for user {UserId}", userId);
+                return Result<string>.Failure(Messages.InvalidConfirmationCode);
+            }
+            
+            if (code.ExpiryTime < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Confirmation code has expired for user {UserId}", userId);
+                return Result<string>.Failure(Messages.InvalidConfirmationCode);
+            }
+            
+            _logger.LogInformation("Retrieved token for user {UserId} using confirmation code", userId);
+            return Result<string>.Success(code.Token);
+        }
+
+        public async Task RemoveConfirmationCodeAsync(string userId)
+        {
+            var codes = await _dbContext.EmailConfirmationCodes
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+            
+            foreach (var code in codes)
+            {
+                code.IsUsed = true;
+            }
+            
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Marked confirmation codes as used for user {UserId}", userId);
         }
     }
 }

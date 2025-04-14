@@ -49,14 +49,15 @@ namespace Hope.Application.Authentication.Commands.Register
             // Generate email confirmation token
             var token = await _authService.GenerateEmailConfirmationTokenAsync(user);
             
-            // Encode the token as it may contain special characters
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            // Generate a 6-digit confirmation code
+            var confirmationCode = GenerateConfirmationCode();
             
-            // Create confirmation link
-            var callbackUrl = $"https://localhost:7217/api/Account/confirm-email?userId={user.Id}&token={encodedToken}";
+            // Store the confirmation code and token for later verification
+            // You'll need to implement this method in IAuthService
+            await _authService.StoreEmailConfirmationCodeAsync(user.Id, confirmationCode, token);
             
-            // Send confirmation email
-            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
+            // Send confirmation code email
+            await _emailService.SendEmailConfirmationCodeAsync(user.Email, confirmationCode);
             
             // Return success message without tokens
             var response = new AuthResponseDto
@@ -68,6 +69,13 @@ namespace Hope.Application.Authentication.Commands.Register
             };
             
             return Result<AuthResponseDto>.Success(response, Messages.RegistrationSuccessCheckEmail);
+        }
+        
+        private string GenerateConfirmationCode()
+        {
+            // Generate a random 6-digit code
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
         }
     }
 }

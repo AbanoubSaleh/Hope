@@ -5,7 +5,7 @@ namespace Hope.Application.Authentication.Commands.ConfirmEmail
 {
     public class ConfirmEmailCommand : IRequest<Result>
     {
-        public string UserId { get; set; }=null!;
-        public string Token { get; set; } = null!;
+        public string UserId { get; set; } = null!;
+        public string ConfirmationCode { get; set; } = null!;
     }
 }

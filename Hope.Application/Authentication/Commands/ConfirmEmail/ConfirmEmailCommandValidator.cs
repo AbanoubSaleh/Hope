@@ -10,8 +10,9 @@ namespace Hope.Application.Authentication.Commands.ConfirmEmail
             RuleFor(v => v.UserId)
                 .NotEmpty().WithMessage(Messages.UserIdRequired);
 
-            RuleFor(v => v.Token)
-                .NotEmpty().WithMessage(Messages.TokenRequired);
+            RuleFor(v => v.ConfirmationCode)
+                .NotEmpty().WithMessage(Messages.ConfirmationCodeRequired)
+                .Length(6).WithMessage(Messages.ConfirmationCodeLength);
         }
     }
 }
