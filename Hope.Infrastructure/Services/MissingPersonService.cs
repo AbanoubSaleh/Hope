@@ -3,8 +3,10 @@ using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.DTOs;
 using Hope.Domain.Entities;
 using Hope.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Hope.Infrastructure.Services;
 
@@ -13,17 +15,31 @@ public class MissingPersonService : IMissingPersonService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<MissingPersonService> _logger;
 
-    public MissingPersonService(ApplicationDbContext context, ILogger<MissingPersonService> logger)
+    // Add this to the constructor parameters
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public MissingPersonService(
+        ApplicationDbContext context, 
+        ILogger<MissingPersonService> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    // Updated method using DTO
+    // Then in your CreateCompleteReportAsync method:
     public async Task<Result<Guid>> CreateCompleteReportAsync(CreateReportDto reportDto)
     {
         try
         {
+            // Get the current user ID from the HttpContext
+            string? userId = null;
+            if (_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
+            {
+                userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+
             // Validate all foreign keys first
             var center = await _context.Centers.FindAsync(reportDto.CenterId);
             if (center == null)
@@ -44,7 +60,8 @@ public class MissingPersonService : IMissingPersonService
                 reportDto.ReportType,
                 reportDto.ReportSubjectType,
                 reportDto.CenterId,
-                reportDto.GovernmentId);
+                reportDto.GovernmentId,
+                userId); // Pass the userId
 
             // Add missing person if applicable
             if (reportDto.ReportSubjectType == ReportSubjectType.Person)

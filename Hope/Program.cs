@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,7 +80,8 @@ builder.Services.AddSwaggerGen(options =>
 
 // Add Infrastructure services
 builder.Services.AddInfrastructure(builder.Configuration);
-
+// Add this line in your service registration
+builder.Services.AddHttpContextAccessor();
 // Add MediatR
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(RegisterCommand).Assembly);
@@ -116,3 +118,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

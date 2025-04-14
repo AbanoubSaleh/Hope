@@ -18,12 +18,14 @@ namespace Hope.Domain.Entities
         // Foreign keys
         public Guid CenterId { get; private set; }
         public int GovernmentId { get; private set; }
+        public string? UserId { get; private set; } // Added UserId property
         
         // Navigation properties
         public Center Center { get; set; } = null!;
         public Government Government { get; set; } = null!;
         public MissingPerson? MissingPerson { get; private set; }
         public MissingThing? MissingThing { get; private set; }
+        public ApplicationUser? User { get; set; } // Added User navigation property
         
         // Factory method to create a new report
         public static Report Create(
@@ -32,7 +34,8 @@ namespace Hope.Domain.Entities
             ReportType reportType,
             ReportSubjectType subjectType,
             Guid centerId,
-            int governmentId)
+            int governmentId,
+            string? userId = null) // Added optional userId parameter
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 throw new ArgumentException("Phone number cannot be empty", nameof(phoneNumber));
@@ -55,7 +58,8 @@ namespace Hope.Domain.Entities
                 ReportType = reportType,
                 ReportSubjectType = subjectType,
                 CenterId = centerId,
-                GovernmentId = governmentId
+                GovernmentId = governmentId,
+                UserId = userId // Set the UserId
             };
         }
         

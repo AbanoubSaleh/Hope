@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 
 namespace Hope.Domain.Entities
 {
@@ -15,7 +16,10 @@ namespace Hope.Domain.Entities
         // Foreign key for Government
         public int? GovernmentId { get; set; }
         
-        // Navigation property
+        // Navigation properties
         public Government? Government { get; set; }
+        
+        // Collection navigation property for Reports
+        public ICollection<Report> Reports { get; set; } = new List<Report>();
     }
 }
