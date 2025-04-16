@@ -40,10 +40,10 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet("governments/{governmentId}/centers")]
-        [ProducesResponseType(typeof(Result<IEnumerable<Center>>), 200)]
+        [ProducesResponseType(typeof(Result<IEnumerable<CenterDto>>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
         [ProducesResponseType(typeof(Result), 404)]
-        public async Task<ActionResult<Result<IEnumerable<Center>>>> GetCentersByGovernmentId(int governmentId)
+        public async Task<ActionResult<Result<IEnumerable<CenterDto>>>> GetCentersByGovernmentId(int governmentId)
         {
             var result = await _mediator.Send(new GetCentersByGovernmentIdQuery { GovernmentId = governmentId });
             

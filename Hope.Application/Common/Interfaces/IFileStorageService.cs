@@ -6,7 +6,7 @@ namespace Hope.Application.Common.Interfaces
 {
     public interface IFileStorageService
     {
-        Task<Result<string>> SaveFileAsync(IFormFile file, string folderName);
+        Task<Result<string>> SaveFileAsync(IFormFile file, string folderName, string customFilename = null);
         Task<Result> DeleteFileAsync(string filePath);
     }
 }

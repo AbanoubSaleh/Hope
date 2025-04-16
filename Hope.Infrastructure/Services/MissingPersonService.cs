@@ -1,5 +1,6 @@
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
+using Hope.Application.LookUps.Dtos;
 using Hope.Application.MissingPerson.DTOs;
 using Hope.Domain.Entities;
 using Hope.Domain.Enums;
@@ -198,7 +199,7 @@ public class MissingPersonService : IMissingPersonService
 
     // Add this method to the MissingPersonService class
     
-    public async Task<Result<IEnumerable<Center>>> GetCentersByGovernmentIdAsync(int governmentId)
+    public async Task<Result<IEnumerable<CenterDto>>> GetCentersByGovernmentIdAsync(int governmentId)
     {
         try
         {
@@ -206,20 +207,62 @@ public class MissingPersonService : IMissingPersonService
             var government = await _context.Governments.FindAsync(governmentId);
             if (government == null)
             {
-                return Result<IEnumerable<Center>>.Failure("Government not found");
+                return Result<IEnumerable<CenterDto>>.Failure("Government not found");
             }
     
             // Get centers for the specified government
             var centers = await _context.Centers
                 .Where(c => c.GovernmentId == governmentId)
+                .Select(x=>new CenterDto { Id=x.Id,NameAr=x.NameAr,NameEn=x.NameEn})
                 .ToListAsync();
                 
-            return Result<IEnumerable<Center>>.Success(centers);
+            return Result<IEnumerable<CenterDto>>.Success(centers);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving centers for government {GovernmentId}", governmentId);
-            return Result<IEnumerable<Center>>.Failure("Error retrieving centers: " + ex.Message);
+            return Result<IEnumerable<CenterDto>>.Failure("Error retrieving centers: " + ex.Message);
+        }
+    }
+
+    // Add this method to update a report with images after creation
+    public async Task<Result<bool>> UpdateReportImagesAsync(Guid reportId, List<ImageDto> images)
+    {
+        try
+        {
+            var report = await _context.Reports
+                .Include(r => r.MissingPerson)
+                .Include(r => r.MissingThing)
+                .FirstOrDefaultAsync(r => r.Id == reportId);
+
+            if (report == null)
+            {
+                return Result<bool>.Failure("Report not found");
+            }
+
+            // Add images based on the report subject type
+            if (report.ReportSubjectType == ReportSubjectType.Person && report.MissingPerson != null)
+            {
+                foreach (var image in images.Where(i => i.IsForPerson))
+                {
+                    report.MissingPerson.AddImage(image.Path);
+                }
+            }
+            else if (report.ReportSubjectType == ReportSubjectType.Thing && report.MissingThing != null)
+            {
+                foreach (var image in images.Where(i => !i.IsForPerson))
+                {
+                    report.MissingThing.AddImage(image.Path);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Result<bool>.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating report images for report {ReportId}", reportId);
+            return Result<bool>.Failure("Error updating report images: " + ex.Message);
         }
     }
 }

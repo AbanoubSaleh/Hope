@@ -1,4 +1,5 @@
 using Hope.Application.Common.Models;
+using Hope.Application.LookUps.Dtos;
 using Hope.Application.MissingPerson.DTOs;
 using Hope.Domain.Entities;
 using Hope.Domain.Enums;
@@ -22,6 +23,8 @@ namespace Hope.Application.Common.Interfaces
         Task<Result<IEnumerable<Center>>> GetAllCentersAsync();
         
         // New method to get centers by government ID
-        Task<Result<IEnumerable<Center>>> GetCentersByGovernmentIdAsync(int governmentId);
+        Task<Result<IEnumerable<CenterDto>>> GetCentersByGovernmentIdAsync(int governmentId);
+        
+        Task<Result<bool>> UpdateReportImagesAsync(Guid reportId, List<ImageDto> images);
     }
 }
