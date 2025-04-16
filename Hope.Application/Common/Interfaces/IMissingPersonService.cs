@@ -18,7 +18,7 @@ namespace Hope.Application.Common.Interfaces
             ReportType? reportType = null, 
             ReportSubjectType? subjectType = null);
             
-        Task<Result<Report>> GetReportByIdAsync(Guid reportId);
+        Task<Result<ReportDto>> GetReportByIdAsync(Guid reportId);
         
         Task<Result<IEnumerable<Center>>> GetAllCentersAsync();
         

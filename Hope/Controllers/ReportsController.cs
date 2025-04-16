@@ -1,5 +1,6 @@
 using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.Commands.CreateMissingPersonReport;
+using Hope.Application.MissingPerson.DTOs;
 using Hope.Application.MissingPerson.Queries.GetReportById;
 using Hope.Application.MissingPerson.Queries.GetReports;
 using Hope.Domain.Entities;
@@ -64,17 +65,17 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Result<Report>), 200)]
+        [ProducesResponseType(typeof(Result<ReportDto>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
         [ProducesResponseType(typeof(Result), 404)]
-        public async Task<ActionResult<Result<Report>>> GetReportById(Guid id)
+        public async Task<ActionResult<Result<ReportDto>>> GetReportById(Guid id)
         {
             var query = new GetReportByIdQuery { ReportId = id };
             var result = await _mediator.Send(query);
 
             if (!result.Succeeded)
             {
-                if (result.Message.Contains("not found"))
+                if (result.Message!.Contains("not found"))
                 {
                     return NotFound(result);
                 }

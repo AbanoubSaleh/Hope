@@ -11,9 +11,7 @@ namespace Hope.Domain.Entities
         
         public Guid Id { get; private set; }
         public string Type { get; private set; } = null!;
-        public string Description { get; private set; } = null!;
-        public MissingState State { get; private set; }
-        
+        public string Description { get; private set; } = null!;        
         // Foreign key
         public Guid ReportId { get; private set; }
         
@@ -42,7 +40,6 @@ namespace Hope.Domain.Entities
                 Id = Guid.NewGuid(),
                 Type = type,
                 Description = description,
-                State = state,
                 ReportId = reportId
             };
         }

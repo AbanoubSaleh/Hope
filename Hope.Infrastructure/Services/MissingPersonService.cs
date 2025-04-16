@@ -152,7 +152,7 @@ public class MissingPersonService : IMissingPersonService
         }
     }
 
-    public async Task<Result<Report>> GetReportByIdAsync(Guid reportId)
+    public async Task<Result<ReportDto>> GetReportByIdAsync(Guid reportId)
     {
         try
         {
@@ -161,19 +161,21 @@ public class MissingPersonService : IMissingPersonService
                 .Include(r => r.Government)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
+                    .Include(r => r.MissingThing)
+                    .ThenInclude(mt => mt.Images)
                 .FirstOrDefaultAsync(r => r.Id == reportId);
 
             if (report == null)
             {
-                return Result<Report>.Failure("Report not found");
+                return Result<ReportDto>.Failure("Report not found");
             }
 
-            return Result<Report>.Success(report);
+            return Result<ReportDto>.Success( ReportDto.FromEntity(report));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving report {ReportId}", reportId);
-            return Result<Report>.Failure("Error retrieving report: " + ex.Message);
+            return Result<ReportDto>.Failure("Error retrieving report: " + ex.Message);
         }
     }
 
