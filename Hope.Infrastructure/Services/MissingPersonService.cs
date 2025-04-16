@@ -119,8 +119,8 @@ public class MissingPersonService : IMissingPersonService
         }
     }
 
-    public async Task<Result<IEnumerable<Report>>> GetReportsAsync(
-        ReportType? reportType = null, 
+    public async Task<Result<IEnumerable<ReportDto>>> GetReportsAsync(
+        
         ReportSubjectType? subjectType = null)
     {
         try
@@ -130,12 +130,9 @@ public class MissingPersonService : IMissingPersonService
                 .Include(r => r.Government)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
+                    .Include(r => r.MissingThing)
+                    .ThenInclude(mt => mt.Images)
                 .AsQueryable();
-
-            if (reportType.HasValue)
-            {
-                query = query.Where(r => r.ReportType == reportType.Value);
-            }
 
             if (subjectType.HasValue)
             {
@@ -143,12 +140,12 @@ public class MissingPersonService : IMissingPersonService
             }
 
             var reports = await query.ToListAsync();
-            return Result<IEnumerable<Report>>.Success(reports);
+            return Result<IEnumerable<ReportDto>>.Success(reports.Select(x=> ReportDto.FromEntity(x)));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving reports");
-            return Result<IEnumerable<Report>>.Failure("Error retrieving reports: " + ex.Message);
+            return Result<IEnumerable<ReportDto>>.Failure("Error retrieving reports: " + ex.Message);
         }
     }
 

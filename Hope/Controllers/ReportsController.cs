@@ -42,15 +42,14 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(Result<IEnumerable<Report>>), 200)]
+        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
         public async Task<ActionResult<Result<IEnumerable<Report>>>> GetReports(
-            [FromQuery] ReportType? reportType = null,
+            
             [FromQuery] ReportSubjectType? reportSubjectType = null)
         {
             var query = new GetReportsQuery
             {
-                ReportType = reportType,
                 ReportSubjectType = reportSubjectType
             };
 

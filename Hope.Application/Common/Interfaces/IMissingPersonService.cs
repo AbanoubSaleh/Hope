@@ -14,8 +14,7 @@ namespace Hope.Application.Common.Interfaces
         // New method using DTO
         Task<Result<Guid>> CreateCompleteReportAsync(CreateReportDto reportDto);
             
-        Task<Result<IEnumerable<Report>>> GetReportsAsync(
-            ReportType? reportType = null, 
+        Task<Result<IEnumerable<ReportDto>>> GetReportsAsync(          
             ReportSubjectType? subjectType = null);
             
         Task<Result<ReportDto>> GetReportByIdAsync(Guid reportId);
