@@ -26,8 +26,8 @@ namespace Hope.Application.MissingPerson.DTOs
         public string? ThingDescription { get; set; }
         public MissingState? ThingState { get; set; }
         
-        // Images
-        public List<ImageDto>? Images { get; set; }
+        // Single image instead of a list
+        public ImageDto? Image { get; set; }
     }
 
     public class ImageDto

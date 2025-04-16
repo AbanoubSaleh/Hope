@@ -25,6 +25,6 @@ namespace Hope.Application.Common.Interfaces
         // New method to get centers by government ID
         Task<Result<IEnumerable<CenterDto>>> GetCentersByGovernmentIdAsync(int governmentId);
         
-        Task<Result<bool>> UpdateReportImagesAsync(Guid reportId, List<ImageDto> images);
+        Task<Result<bool>> UpdateReportImageAsync(Guid reportId, ImageDto image);
     }
 }

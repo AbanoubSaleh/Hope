@@ -28,7 +28,7 @@ namespace Hope.Application.MissingPerson.Commands.CreateMissingPersonReport
         {
             try
             {
-                // Create the DTO without images first
+                // Create the DTO without image first
                 var reportDto = new CreateReportDto
                 {
                     PhoneNumber = request.PhoneNumber,
@@ -50,8 +50,8 @@ namespace Hope.Application.MissingPerson.Commands.CreateMissingPersonReport
                     ThingDescription = request.ThingDescription,
                     ThingState = request.ThingState,
                     
-                    // No images yet
-                    Images = null
+                    // No image yet
+                    Image = null
                 };
                 
                 // Create the report first to get the ID
@@ -63,36 +63,31 @@ namespace Hope.Application.MissingPerson.Commands.CreateMissingPersonReport
                 }
                 
                 var reportId = result.Data;
-                var savedImages = new List<ImageDto>();
                 
                 // Now save the single image with report ID in the filename
-                if (request.Images != null && request.Images.Count > 0)
+                if (request.Image != null)
                 {
-                    string folderName = request.ReportSubjectType == Hope.Domain.Enums.ReportSubjectType.Person 
-                        ? "missing-persons" 
-                        : "missing-things";
-                    
-                    // Get the first image only
-                    var image = request.Images[0];
+                    // Use a single folder for all report images
+                    string folderName = "report-images";
                     
                     // Set custom filename with just the report ID and extension
-                    string customFilename = $"{reportId}{Path.GetExtension(image.FileName)}";
+                    string customFilename = $"{reportId}{Path.GetExtension(request.Image.FileName)}";
                     
                     var fileResult = await _fileStorageService.SaveFileAsync(
-                        image, 
+                        request.Image, 
                         folderName,
                         customFilename);
                         
                     if (fileResult.Succeeded)
                     {
-                        savedImages.Add(new ImageDto 
+                        var imageDto = new ImageDto 
                         { 
                             Path = fileResult.Data, 
                             IsForPerson = request.ReportSubjectType == Hope.Domain.Enums.ReportSubjectType.Person 
-                        });
+                        };
                         
                         // Update the report with the image
-                        await _missingPersonService.UpdateReportImagesAsync(reportId, savedImages);
+                        await _missingPersonService.UpdateReportImageAsync(reportId, imageDto);
                     }
                 }
                 

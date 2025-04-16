@@ -20,7 +20,7 @@ namespace Hope.Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task<Result<string>> SaveFileAsync(IFormFile file, string folderName)
+        public async Task<Result<string>> SaveFileAsync(IFormFile file, string folderName, string customFilename)
         {
             try
             {
@@ -36,9 +36,8 @@ namespace Hope.Infrastructure.Services
                     Directory.CreateDirectory(uploadsFolder);
                 }
 
-                // Generate a unique filename
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                // Use the custom filename provided (which contains the report ID)
+                var filePath = Path.Combine(uploadsFolder, customFilename);
 
                 // Save the file
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -47,7 +46,7 @@ namespace Hope.Infrastructure.Services
                 }
 
                 // Return the relative path for storage in the database
-                var relativePath = Path.Combine("uploads", folderName, uniqueFileName).Replace("\\", "/");
+                var relativePath = Path.Combine("uploads", folderName, customFilename).Replace("\\", "/");
                 
                 _logger.LogInformation("File saved successfully: {FilePath}", relativePath);
                 return Result<string>.Success(relativePath);
@@ -85,5 +84,7 @@ namespace Hope.Infrastructure.Services
                 return Task.FromResult(Result.Failure($"Error deleting file: {ex.Message}"));
             }
         }
+
+
     }
 }

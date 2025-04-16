@@ -29,7 +29,7 @@ namespace Hope.Application.MissingPerson.Commands.CreateMissingPersonReport
         public string? ThingDescription { get; set; }
         public MissingState? ThingState { get; set; }
         
-        // Images (optional)
-        public List<IFormFile>? Images { get; set; }
+        // Single image (optional) instead of a list
+        public IFormFile? Image { get; set; }
     }
 }

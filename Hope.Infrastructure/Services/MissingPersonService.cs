@@ -79,13 +79,10 @@ public class MissingPersonService : IMissingPersonService
                 // Add the missing person to the report
                 report.AddMissingPerson(missingPerson);
 
-                // Add images for person if provided
-                if (reportDto.Images != null)
+                // Add single image for person if provided
+                if (reportDto.Image != null && reportDto.Image.IsForPerson)
                 {
-                    foreach (var image in reportDto.Images.Where(i => i.IsForPerson))
-                    {
-                        missingPerson.AddImage(image.Path);
-                    }
+                    missingPerson.AddImage(reportDto.Image.Path);
                 }
             }
             // Add missing thing if applicable
@@ -101,13 +98,10 @@ public class MissingPersonService : IMissingPersonService
                 // Add the missing thing to the report
                 report.AddMissingThing(missingThing);
 
-                // Add images for thing if provided
-                if (reportDto.Images != null)
+                // Add single image for thing if provided
+                if (reportDto.Image != null && !reportDto.Image.IsForPerson)
                 {
-                    foreach (var image in reportDto.Images.Where(i => !i.IsForPerson))
-                    {
-                        missingThing.AddImage(image.Path);
-                    }
+                    missingThing.AddImage(reportDto.Image.Path);
                 }
             }
 
@@ -263,6 +257,81 @@ public class MissingPersonService : IMissingPersonService
         {
             _logger.LogError(ex, "Error updating report images for report {ReportId}", reportId);
             return Result<bool>.Failure("Error updating report images: " + ex.Message);
+        }
+    }
+
+    // Add this method to update a report with a single image after creation
+    public async Task<Result<bool>> UpdateReportImageAsync(Guid reportId, ImageDto image)
+    {
+        try
+        {
+            // First, determine if we're dealing with a person or thing report
+            var report = await _context.Reports
+                .AsNoTracking() // Use AsNoTracking to just get the type info without tracking
+                .FirstOrDefaultAsync(r => r.Id == reportId);
+
+            if (report == null)
+            {
+                return Result<bool>.Failure("Report not found");
+            }
+
+            // Create the image entity directly
+            if (report.ReportSubjectType == ReportSubjectType.Person && image.IsForPerson)
+            {
+                // Get the missing person ID
+                var missingPersonId = await _context.MissingPersons
+                    .Where(mp => mp.ReportId == reportId)
+                    .Select(mp => mp.Id)
+                    .FirstOrDefaultAsync();
+
+                if (missingPersonId == Guid.Empty)
+                {
+                    return Result<bool>.Failure("Missing person not found for this report");
+                }
+
+                // Create and add the image directly
+                var personImage = new MissingPersonImage
+                {
+                    MissingPersonId = missingPersonId,
+                    ImagePath = image.Path
+                };
+
+                _context.MissingPersonImages.Add(personImage);
+            }
+            else if (report.ReportSubjectType == ReportSubjectType.Thing && !image.IsForPerson)
+            {
+                // Get the missing thing ID
+                var missingThingId = await _context.MissingThings
+                    .Where(mt => mt.ReportId == reportId)
+                    .Select(mt => mt.Id)
+                    .FirstOrDefaultAsync();
+
+                if (missingThingId == Guid.Empty)
+                {
+                    return Result<bool>.Failure("Missing thing not found for this report");
+                }
+
+                // Create and add the image directly
+                var thingImage = new MissingThingImage
+                {
+                    MissingThingId = missingThingId,
+                    ImagePath = image.Path
+                };
+
+                _context.MissingThingImages.Add(thingImage);
+            }
+            else
+            {
+                return Result<bool>.Failure("Image type doesn't match report subject type");
+            }
+            
+            await _context.SaveChangesAsync();
+            return Result<bool>.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating report image for report {ReportId}", reportId);
+            return Result<bool>.Failure("Error updating report image: " + ex.Message);
         }
     }
 }

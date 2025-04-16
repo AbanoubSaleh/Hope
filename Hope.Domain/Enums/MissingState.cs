@@ -2,9 +2,8 @@ namespace Hope.Domain.Enums
 {
     public enum MissingState
     {
-        Normal = 0,
-        Sick = 1,
-        MentallyUnstable = 2,
-        Disabled = 3
+        LostPerson = 0,    // شخص تائه
+        Accidents = 1,     // حوادث
+        Shelters = 2       // ملاجئ
     }
 }

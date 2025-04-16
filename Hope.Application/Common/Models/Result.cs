@@ -4,10 +4,10 @@ namespace Hope.Application.Common.Models
     {
         public bool Succeeded { get; private set; }
         public T Data { get; private set; }
-        public string Message { get; private set; }
-        public Dictionary<string, string[]> Errors { get; private set; }
+        public string? Message { get; private set; }
+        public Dictionary<string, string[]>? Errors { get; private set; }
 
-        private Result(bool succeeded, T data, string message, Dictionary<string, string[]> errors)
+        private Result(bool succeeded, T data, string? message, Dictionary<string, string[]>? errors)
         {
             Succeeded = succeeded;
             Data = data;
@@ -15,12 +15,12 @@ namespace Hope.Application.Common.Models
             Errors = errors;
         }
 
-        public static Result<T> Success(T data, string message = null)
+        public static Result<T> Success(T data, string? message = null)
         {
             return new Result<T>(true, data, message, null);
         }
 
-        public static Result<T> Failure(string message, Dictionary<string, string[]> errors = null)
+        public static Result<T> Failure(string message, Dictionary<string, string[]>? errors = null)
         {
             return new Result<T>(false, default, message, errors);
         }
