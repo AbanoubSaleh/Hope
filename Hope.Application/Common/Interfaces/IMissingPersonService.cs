@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+// Add this to the existing interface
+using Hope.Application.Comments.DTOs;
+
 namespace Hope.Application.Common.Interfaces
 {
     public interface IMissingPersonService
@@ -38,5 +41,8 @@ namespace Hope.Application.Common.Interfaces
         
         // New method for updating reports
         Task<Result<bool>> UpdateReportAsync(UpdateReportDto updateDto);
+        
+        // New methods for comments
+        Task<Result<IEnumerable<CommentDto>>> GetReportCommentsAsync(Guid reportId);
     }
 }

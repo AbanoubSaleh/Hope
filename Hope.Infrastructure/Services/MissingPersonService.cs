@@ -1,3 +1,4 @@
+using Hope.Application.Comments.DTOs;
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Application.LookUps.Dtos;
@@ -544,6 +545,43 @@ public class MissingPersonService : IMissingPersonService
         {
             _logger.LogError(ex, "Error retrieving archived reports");
             return Result<IEnumerable<ReportDto>>.Failure("Error retrieving archived reports: " + ex.Message);
+        }
+    }
+
+
+    public async Task<Result<IEnumerable<CommentDto>>> GetReportCommentsAsync(Guid reportId)
+    {
+        try
+        {
+            // Check if report exists
+            var report = await _context.Reports
+                .FirstOrDefaultAsync(r => r.Id == reportId && !r.IsDeleted);
+                
+            if (report == null)
+            {
+                return Result<IEnumerable<CommentDto>>.Failure("Report not found or has been deleted");
+            }
+            
+            // Get comments with replies
+            var comments = await _context.Comments
+                .Include(c => c.User)
+                .Include(c => c.Replies)
+                    .ThenInclude(r => r.User)
+                .Include(c => c.Replies)
+                    .ThenInclude(r => r.ChildReplies)
+                        .ThenInclude(cr => cr.User)
+                .Where(c => c.ReportId == reportId && !c.IsDeleted)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+            
+            var commentDtos = comments.Select(CommentDto.FromEntity).ToList();
+            
+            return Result<IEnumerable<CommentDto>>.Success(commentDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving comments for report {ReportId}", reportId);
+            return Result<IEnumerable<CommentDto>>.Failure("Error retrieving comments: " + ex.Message);
         }
     }
 }

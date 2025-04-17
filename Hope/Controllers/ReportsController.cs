@@ -183,17 +183,12 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
-        [HttpPut("{id}")]
+        [HttpPut]
         [ProducesResponseType(typeof(Result<bool>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
         [ProducesResponseType(typeof(Result), 404)]
-        public async Task<ActionResult<Result<bool>>> UpdateReport(Guid id, [FromForm] UpdateMissingPersonReportCommand command)
+        public async Task<ActionResult<Result<bool>>> UpdateReport([FromForm] UpdateMissingPersonReportCommand command)
         {
-            // Ensure the ID in the route matches the ID in the command
-            if (id != command.ReportId)
-            {
-                command.ReportId = id;
-            }
             
             var result = await _mediator.Send(command);
 

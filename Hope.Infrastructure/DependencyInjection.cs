@@ -77,7 +77,7 @@ namespace Hope.Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ILookupService, LookupService>();
-
+            services.AddScoped<ICommentService, CommentService>();
             // Add this to the AddInfrastructure method
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IMissingPersonService, MissingPersonService>();

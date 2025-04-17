@@ -30,6 +30,7 @@ namespace Hope.Domain.Entities
         public MissingPerson? MissingPerson { get; private set; }
         public MissingThing? MissingThing { get; private set; }
         public ApplicationUser? User { get; set; } // Added User navigation property
+        public ICollection<Comment> Comments { get; private set; } = new List<Comment>(); // Added Comments collection
         
         // Factory method to create a new report
         public static Report Create(

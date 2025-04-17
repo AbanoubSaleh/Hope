@@ -19,6 +19,7 @@ namespace Hope.Infrastructure
         // Add DbSets for Missing Person feature
         public DbSet<Center> Centers { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Comment> Comments { get; set; }
         public DbSet<MissingPerson> MissingPersons { get; set; }
         public DbSet<MissingPersonImage> MissingPersonImages { get; set; }
         
