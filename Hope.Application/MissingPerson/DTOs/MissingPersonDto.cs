@@ -10,6 +10,7 @@ public class MissingPersonDto
     public int Age { get;  set; }
     public string Description { get;  set; } = null!;
     public MissingState State { get;  set; }
+    public string ImagePath { get; set; } = null!;
     public static MissingPersonDto FromEntity(Hope.Domain.Entities.MissingPerson person)
     {
         return new MissingPersonDto
@@ -19,7 +20,8 @@ public class MissingPersonDto
             Gender = person.Gender,
             Age = person.Age,
             Description = person.Description,
-            State = person.State
+            State = person.State,
+            ImagePath = person.Images.FirstOrDefault()?.ImagePath ?? string.Empty
         };
     }
 }

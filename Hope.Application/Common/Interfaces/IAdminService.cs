@@ -13,6 +13,7 @@ namespace Hope.Application.Common.Interfaces
         // User management
         Task<Result<int>> GetUserCountAsync();
         Task<Result<List<WeeklyCountDto>>> GetNumberOfNewUserPerWeekAsync();
+        Task<Result<List<WeeklyCountDto>>> GetNumberOfNewUsersPerWeekAsync(); // Added this method
         Task<Result<List<UserDto>>> GetAllUsersAsync();
         Task<Result<bool>> DeleteUserAsync(string userId);
         Task<Result<string>> AdminRegisterAsync(string userName, string email, string password, bool isAdmin);

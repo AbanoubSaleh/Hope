@@ -14,7 +14,11 @@ namespace Hope.Domain.Entities
         public DateTime ReportTime { get; private set; }
         public ReportType ReportType { get; private set; }
         public ReportSubjectType ReportSubjectType { get; private set; }
-        
+        // Add these properties to your Report entity
+        public bool IsHidden { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
+
         // Foreign keys
         public Guid CenterId { get; private set; }
         public int GovernmentId { get; private set; }
@@ -86,10 +90,7 @@ namespace Hope.Domain.Entities
                 
             MissingThing = missingThing ?? throw new ArgumentNullException(nameof(missingThing));
         }
-        
-        // Add these properties to your Report entity
-        public bool IsHidden { get; set; } = false;
-        public bool IsDeleted { get; set; } = false;
-        public DateTime? DeletedAt { get; set; }
+
+
     }
 }

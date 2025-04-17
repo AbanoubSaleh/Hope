@@ -81,6 +81,20 @@ namespace Hope.Infrastructure.Services
             }
         }
 
+        public async Task<Result<List<WeeklyCountDto>>> GetNumberOfNewUsersPerWeekAsync()
+        {
+            try
+            {
+                // This is just an alias for the existing method to maintain compatibility
+                return await GetNumberOfNewUserPerWeekAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting new users per week");
+                return Result<List<WeeklyCountDto>>.Failure("Error getting new users per week: " + ex.Message);
+            }
+        }
+
         public async Task<Result<List<UserDto>>> GetAllUsersAsync()
         {
             try
@@ -128,12 +142,31 @@ namespace Hope.Infrastructure.Services
                     return Result<bool>.Failure("Cannot delete a SuperAdmin user");
                 }
 
+                // Find all reports created by this user
+                var userReports = await _context.Reports
+                    .Where(r => r.UserId == userId)
+                    .ToListAsync();
+
+                    _context.Reports.RemoveRange(userReports);                
+
+                // Save changes to reports
+                await _context.SaveChangesAsync();
+
+                // Remove user roles first
+                var userRoles = await _userManager.GetRolesAsync(user);
+                if (userRoles.Any())
+                {
+                    await _userManager.RemoveFromRolesAsync(user, userRoles);
+                }
+
+                // Delete the user
                 var result = await _userManager.DeleteAsync(user);
                 if (!result.Succeeded)
                 {
                     return Result<bool>.Failure("Failed to delete user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
 
+                _logger.LogInformation("User {UserId} and all related data successfully deleted", userId);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

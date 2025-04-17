@@ -12,15 +12,12 @@ using Hope.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Hope.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -48,7 +45,7 @@ namespace Hope.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
-        public async Task<ActionResult<Result<IEnumerable<Report>>>> GetReports(
+        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetReports(
             
             [FromQuery] ReportSubjectType? reportSubjectType = null)
         {
@@ -150,7 +147,26 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
+        [HttpPut("reports/{id}/unhide")]
+        [ProducesResponseType(typeof(Result<bool>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        [ProducesResponseType(typeof(Result), 404)]
+        public async Task<ActionResult<Result<bool>>> UnHidePosts(Guid id)
+        {
+            var command = new UnHideReportCommand { ReportId = id };
+            var result = await _mediator.Send(command);
 
+            if (!result.Succeeded)
+            {
+                if (result.Message!.Contains("not found"))
+                {
+                    return NotFound(result);
+                }
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
         [HttpGet("archived")]
         [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
