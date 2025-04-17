@@ -18,7 +18,9 @@ public class ReportDto
     public GovernmentDto Government { get; set; } = null!;
     public MissingPersonDto? MissingPerson { get;  set; }
     public MissingThingDto? MissingThing { get;  set; }
-    public string ? CreatedBy { get; set; } 
+    public string ? CreatedBy { get; set; }
+    public bool IsHidden { get; set; } = false;
+
 
     public static ReportDto FromEntity(Report report)
     {
@@ -34,7 +36,8 @@ public class ReportDto
             Government = GovernmentDto.FromEntity(report.Government),
             MissingPerson = report.MissingPerson != null ? MissingPersonDto.FromEntity(report.MissingPerson) : null,
             MissingThing = report.MissingThing != null ? MissingThingDto.FromEntity(report.MissingThing) : null,
-            CreatedBy = report.User != null ? report.User.UserName : null
+            CreatedBy = report.User != null ? report.User.UserName : null,
+            IsHidden=report.IsHidden
 
         };
     }

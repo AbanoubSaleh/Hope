@@ -85,6 +85,43 @@ namespace Hope.Infrastructure.Services
             }
         }
 
+        public async Task<Result<string>> UploadFileAsync(IFormFile file, string folderName)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Result<string>.Failure("File is empty");
+                }
 
+                // Generate a unique filename
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+                // Create the uploads directory if it doesn't exist
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", folderName);
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Save the file
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Return the relative path for storage in the database
+                var relativePath = Path.Combine("uploads", folderName, fileName).Replace("\\", "/");
+                
+                _logger.LogInformation("File uploaded successfully: {FilePath}", relativePath);
+                return Result<string>.Success(relativePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading file");
+                return Result<string>.Failure($"Error uploading file: {ex.Message}");
+            }
+        }
     }
 }

@@ -8,5 +8,6 @@ namespace Hope.Application.Common.Interfaces
     {
         Task<Result<string>> SaveFileAsync(IFormFile file, string folderName, string customFilename = null);
         Task<Result> DeleteFileAsync(string filePath);
+        Task<Result<string>> UploadFileAsync(IFormFile file, string folderName);
     }
 }

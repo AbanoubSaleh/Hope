@@ -81,7 +81,7 @@ namespace Hope.Infrastructure
             // Add this to the AddInfrastructure method
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IMissingPersonService, MissingPersonService>();
-
+            services.AddScoped<IUserService, UserService>();
             // Add this to the ConfigureServices method
             services.AddScoped<IAdminService, AdminService>();
             return services;

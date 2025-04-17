@@ -12,6 +12,7 @@ namespace Hope.Domain.Entities
         public bool IsDeleted { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
+        public string? ProfileImageUrl { get; set; }
         
         // Foreign key for Government
         public int? GovernmentId { get; set; }
