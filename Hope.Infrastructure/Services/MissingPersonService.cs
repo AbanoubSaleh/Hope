@@ -128,6 +128,7 @@ public class MissingPersonService : IMissingPersonService
             var query = _context.Reports
                 .Include(r => r.Center)
                 .Include(r => r.Government)
+                .Include(r => r.User)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
                     .Include(r => r.MissingThing)
@@ -156,6 +157,7 @@ public class MissingPersonService : IMissingPersonService
             var report = await _context.Reports
                 .Include(r => r.Center)
                 .Include(r => r.Government)
+                .Include(r => r.User)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
                     .Include(r => r.MissingThing)
