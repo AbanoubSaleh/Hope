@@ -2,6 +2,7 @@ using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.Commands.CreateMissingPersonReport;
 using Hope.Application.MissingPerson.Commands.DeleteReport;
 using Hope.Application.MissingPerson.Commands.HideReport;
+using Hope.Application.MissingPerson.Commands.UpdateMissingPersonReport;
 using Hope.Application.MissingPerson.DTOs;
 using Hope.Application.MissingPerson.Queries.GetArchivedReports;
 using Hope.Application.MissingPerson.Queries.GetReportById;
@@ -180,6 +181,31 @@ namespace Hope.Api.Controllers
                 return BadRequest(result);
             }
 
+            return Ok(result);
+        }
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(Result<bool>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        [ProducesResponseType(typeof(Result), 404)]
+        public async Task<ActionResult<Result<bool>>> UpdateReport(Guid id, [FromForm] UpdateMissingPersonReportCommand command)
+        {
+            // Ensure the ID in the route matches the ID in the command
+            if (id != command.ReportId)
+            {
+                command.ReportId = id;
+            }
+            
+            var result = await _mediator.Send(command);
+
+            if (!result.Succeeded)
+            {
+                if (result.Message!.Contains("not found"))
+                {
+                    return NotFound(result);
+                }
+                return BadRequest(result);
+            }
+        
             return Ok(result);
         }
     }

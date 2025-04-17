@@ -15,7 +15,8 @@ namespace Hope.Domain.Entities
         public int Age { get; private set; }
         public string Description { get; private set; } = null!;
         public MissingState State { get; private set; }
-        
+        public DateTime? UpdatedAt { get; private set; }
+
         // Foreign key
         public Guid ReportId { get; private set; }
         
@@ -70,6 +71,31 @@ namespace Hope.Domain.Entities
             };
             
             Images.Add(image);
+        }
+        
+        // Add this method to the MissingPerson class
+        public void UpdateDetails(
+            string name,
+            Gender gender,
+            int age,
+            string description,
+            MissingState state)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name cannot be empty", nameof(name));
+                
+            if (age <= 0)
+                throw new ArgumentException("Age must be a positive number", nameof(age));
+                
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException("Description cannot be empty", nameof(description));
+            
+            Name = name;
+            Gender = gender;
+            Age = age;
+            Description = description;
+            State = state;
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }

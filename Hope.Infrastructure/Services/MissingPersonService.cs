@@ -369,7 +369,111 @@ public class MissingPersonService : IMissingPersonService
         }
     }
 
-    // ...
+    // Add this method to update a report with images after creation
+    // Add this method to the MissingPersonService class
+    
+    public async Task<Result<bool>> UpdateReportAsync(UpdateReportDto updateDto)
+    {
+        try
+        {
+            // Validate all foreign keys first
+            var center = await _context.Centers.FindAsync(updateDto.CenterId);
+            if (center == null)
+            {
+                return Result<bool>.Failure("Center not found");
+            }
+    
+            var government = await _context.Governments.FindAsync(updateDto.GovernmentId);
+            if (government == null)
+            {
+                return Result<bool>.Failure("Government not found");
+            }
+    
+            // Get the report with related entities
+            var report = await _context.Reports
+                .Include(r => r.MissingPerson)
+                .Include(r => r.MissingThing)
+                .FirstOrDefaultAsync(r => r.Id == updateDto.ReportId && !r.IsDeleted);
+    
+            if (report == null)
+            {
+                return Result<bool>.Failure("Report not found or has been deleted");
+            }
+    
+            // Use domain method to update report properties
+            report.UpdateReportDetails(
+                updateDto.PhoneNumber,
+                updateDto.IncidentTime,
+                updateDto.ReportType,
+                updateDto.CenterId,
+                updateDto.GovernmentId
+            );
+    
+            // Update missing person if applicable
+            if (updateDto.ReportSubjectType == ReportSubjectType.Person)
+            {
+                if (report.MissingPerson == null)
+                {
+                    // Create missing person if it doesn't exist
+                    var missingPerson = MissingPerson.Create(
+                        updateDto.PersonName!,
+                        updateDto.Gender!.Value,
+                        updateDto.Age!.Value,
+                        updateDto.PersonDescription!,
+                        updateDto.PersonState!.Value,
+                        report.Id);
+    
+                    report.AddMissingPerson(missingPerson);
+                }
+                else
+                {
+                    // Update existing missing person using domain method
+                    report.MissingPerson.UpdateDetails(
+                        updateDto.PersonName!,
+                        updateDto.Gender!.Value,
+                        updateDto.Age!.Value,
+                        updateDto.PersonDescription!,
+                        updateDto.PersonState!.Value
+                    );
+                }
+            }
+            // Update missing thing if applicable
+            else if (updateDto.ReportSubjectType == ReportSubjectType.Thing)
+            {
+                if (report.MissingThing == null)
+                {
+                    // Create missing thing if it doesn't exist
+                    var missingThing = MissingThing.Create(
+                        updateDto.ThingType!,
+                        updateDto.ThingDescription!,
+                        updateDto.ThingState!.Value,
+                        report.Id);
+    
+                    report.AddMissingThing(missingThing);
+                }
+                else
+                {
+                    // Update existing missing thing using domain method
+                    report.MissingThing.UpdateDetails(
+                        updateDto.ThingType!,
+                        updateDto.ThingDescription!,
+                        updateDto.ThingState!.Value
+                    );
+                }
+            }
+    
+            // Save all changes
+            await _context.SaveChangesAsync();
+    
+            _logger.LogInformation("Updated report with ID: {ReportId}", report.Id);
+            return Result<bool>.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating report {ReportId}", updateDto.ReportId);
+            return Result<bool>.Failure("Error updating report: " + ex.Message);
+        }
+    }
 
     public async Task<Result<bool>> HideReportAsync(Guid reportId)
     {

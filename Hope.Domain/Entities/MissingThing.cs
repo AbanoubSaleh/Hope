@@ -11,7 +11,9 @@ namespace Hope.Domain.Entities
         
         public Guid Id { get; private set; }
         public string Type { get; private set; } = null!;
-        public string Description { get; private set; } = null!;        
+        public string Description { get; private set; } = null!;
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; private set; }
         // Foreign key
         public Guid ReportId { get; private set; }
         
@@ -40,7 +42,8 @@ namespace Hope.Domain.Entities
                 Id = Guid.NewGuid(),
                 Type = type,
                 Description = description,
-                ReportId = reportId
+                ReportId = reportId,
+                CreatedAt = DateTime.UtcNow
             };
         }
         
@@ -58,6 +61,51 @@ namespace Hope.Domain.Entities
             };
             
             Images.Add(image);
+        }
+        
+        // Method to update an image
+        public void UpdateImage(string oldImagePath, string newImagePath)
+        {
+            if (string.IsNullOrWhiteSpace(newImagePath))
+                throw new ArgumentException("New image path cannot be empty", nameof(newImagePath));
+                
+            var existingImage = Images.FirstOrDefault(i => i.ImagePath == oldImagePath);
+            if (existingImage == null)
+                throw new InvalidOperationException($"Image with path '{oldImagePath}' not found");
+                
+            existingImage.ImagePath = newImagePath;
+            UpdatedAt = DateTime.UtcNow;
+        }
+        
+        // Method to replace all images
+        public void ReplaceImage(string newImagePath)
+        {
+            if (string.IsNullOrWhiteSpace(newImagePath))
+                throw new ArgumentException("New image path cannot be empty", nameof(newImagePath));
+            
+            // Clear existing images
+            Images.Clear();
+            
+            // Add the new image
+            AddImage(newImagePath);
+            UpdatedAt = DateTime.UtcNow;
+        }
+        
+        // Add this method to the MissingThing class
+        public void UpdateDetails(
+            string type,
+            string description,
+            MissingState state)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+                throw new ArgumentException("Type cannot be empty", nameof(type));
+                
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException("Description cannot be empty", nameof(description));
+            
+            Type = type;
+            Description = description;
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }

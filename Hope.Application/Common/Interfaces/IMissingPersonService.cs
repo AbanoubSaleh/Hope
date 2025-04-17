@@ -35,5 +35,8 @@ namespace Hope.Application.Common.Interfaces
         Task<Result<bool>> DeleteReportAsync(Guid reportId);
         
         Task<Result<IEnumerable<ReportDto>>> GetArchivedReportsAsync();
+        
+        // New method for updating reports
+        Task<Result<bool>> UpdateReportAsync(UpdateReportDto updateDto);
     }
 }

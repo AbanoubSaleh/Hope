@@ -91,6 +91,35 @@ namespace Hope.Domain.Entities
             MissingThing = missingThing ?? throw new ArgumentNullException(nameof(missingThing));
         }
 
+        public void UpdateReportDetails(
+            string phoneNumber,
+            DateTime incidentTime,
+            ReportType reportType,
+            Guid centerId,
+            int governmentId)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                throw new ArgumentException("Phone number cannot be empty", nameof(phoneNumber));
+                
+            if (incidentTime > DateTime.UtcNow)
+                throw new ArgumentException("Incident time cannot be in the future", nameof(incidentTime));
+                
+            if (centerId == Guid.Empty)
+                throw new ArgumentException("Center ID cannot be empty", nameof(centerId));
+                
+            if (governmentId <= 0)
+                throw new ArgumentException("Government ID must be a positive number", nameof(governmentId));
+            
+            PhoneNumber = phoneNumber;
+            IncidentTime = incidentTime;
+            ReportType = reportType;
+            CenterId = centerId;
+            GovernmentId = governmentId;
+            UpdatedAt = DateTime.UtcNow;
+        }
 
+        // Add UpdatedAt property
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
     }
 }
