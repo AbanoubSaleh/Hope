@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hope.Application.Admin.Queries
 {
-    public class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery, Result<IEnumerable<ReportDto>>>
+    public class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery, Result<PaginatedList<ReportDto>>>
     {
         private readonly IAdminService _adminService;
         private readonly ILogger<GetAllPostsQueryHandler> _logger;
@@ -23,16 +23,16 @@ namespace Hope.Application.Admin.Queries
             _logger = logger;
         }
 
-        public async Task<Result<IEnumerable<ReportDto>>> Handle(GetAllPostsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PaginatedList<ReportDto>>> Handle(GetAllPostsQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                return await _adminService.GetAllPostsAsync();
+                return await _adminService.GetAllPostsAsync(request.PageNumber, request.PageSize, request.IncludeComments);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving all posts");
-                return Result<IEnumerable<ReportDto>>.Failure("Error retrieving all posts: " + ex.Message);
+                return Result<PaginatedList<ReportDto>>.Failure("Error retrieving all posts: " + ex.Message);
             }
         }
     }

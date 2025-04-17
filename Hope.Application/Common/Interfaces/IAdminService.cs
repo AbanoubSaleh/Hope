@@ -14,10 +14,10 @@ namespace Hope.Application.Common.Interfaces
         Task<Result<int>> GetUserCountAsync();
         Task<Result<List<WeeklyCountDto>>> GetNumberOfNewUserPerWeekAsync();
         Task<Result<List<WeeklyCountDto>>> GetNumberOfNewUsersPerWeekAsync(); // Added this method
-        Task<Result<List<UserDto>>> GetAllUsersAsync();
+        Task<Result<PaginatedList<UserDto>>> GetAllUsersAsync(int pageNumber, int pageSize);
         Task<Result<bool>> DeleteUserAsync(string userId);
         Task<Result<string>> AdminRegisterAsync(string userName, string email, string password, bool isAdmin);
-        Task<Result<List<UserDto>>> GetAllAdminsAsync();
+        Task<Result<PaginatedList<UserDto>>> GetAllAdminsAsync(int pageNumber, int pageSize);
         Task<Result<int>> GetAdminsCountAsync();
 
         // Report management
@@ -26,8 +26,8 @@ namespace Hope.Application.Common.Interfaces
         Task<Result<List<WeeklyCountDto>>> GetNumberOfNewPostsPerWeekAsync();
         Task<Result<ReportDto>> GetPostByIdAsync(Guid reportId);
         Task<Result<bool>> UnHideReportAsync(Guid reportId);
-        Task<Result<IEnumerable<ReportDto>>> GetArchivedReportsAsync();
-        Task<Result<IEnumerable<ReportDto>>> GetAllPostsAsync();
-        Task<Result<IEnumerable<ReportDto>>> GetPostThingsAsync();
+        Task<Result<PaginatedList<ReportDto>>> GetArchivedReportsAsync(int pageNumber, int pageSize, bool includeComments);
+        Task<Result<PaginatedList<ReportDto>>> GetAllPostsAsync(int pageNumber, int pageSize, bool includeComments);
+        Task<Result<PaginatedList<ReportDto>>> GetPostThingsAsync(int pageNumber, int pageSize, bool includeComments);
     }
 }

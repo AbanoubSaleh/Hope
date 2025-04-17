@@ -180,7 +180,11 @@ public class MissingPersonService : IMissingPersonService
     }
 
     // Also update the GetReportsByMissingStateAsync method
-    public async Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null)
+    public async Task<Result<PaginatedList<ReportDto>>> GetReportsByMissingStateAsync(
+        MissingState? missingState = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        bool includeComments = false)
     {
         try
         {
@@ -190,27 +194,117 @@ public class MissingPersonService : IMissingPersonService
                 .Include(r => r.User)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
-                .Where(r => r.ReportSubjectType == ReportSubjectType.Person) // Only include person reports
-                .Where(r => !r.IsDeleted && !r.IsHidden) // Exclude deleted and hidden reports
+                .Where(r => r.ReportSubjectType == ReportSubjectType.Person)
+                .Where(r => !r.IsDeleted && !r.IsHidden)
                 .AsQueryable();
-    
+
             if (missingState.HasValue)
             {
-                // Filter by missing state - only for missing persons
-                query = query.Where(r => 
-                    r.MissingPerson != null && 
+                query = query.Where(r =>
+                    r.MissingPerson != null &&
                     r.MissingPerson.State == missingState.Value);
             }
-    
-            var reports = await query.ToListAsync();
-            return Result<IEnumerable<ReportDto>>.Success(reports.Select(x => ReportDto.FromEntity(x)));
+
+            var totalCount = await query.CountAsync();
+
+            var reports = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var reportDtos = reports.Select(r => ReportDto.FromEntity(r)).ToList();
+
+            if (includeComments)
+            {
+                foreach (var reportDto in reportDtos)
+                {
+                    var comments = await _context.Comments
+                        .Where(c => c.ReportId == reportDto.Id && !c.IsDeleted)
+                        .Include(c => c.User)
+                        .Include(c => c.Replies.Where(r => !r.IsDeleted))
+                        .ThenInclude(r => r.User)
+                        .OrderByDescending(c => c.CreatedAt)
+                        .ToListAsync();
+
+                    reportDto.Comments = comments.Select(CommentDto.FromEntity).ToList();
+                }
+            }
+
+            var paginatedList = new PaginatedList<ReportDto>(
+                reportDtos,
+                totalCount,
+                pageNumber,
+                pageSize);
+
+            return Result<PaginatedList<ReportDto>>.Success(paginatedList);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving reports by missing state");
-            return Result<IEnumerable<ReportDto>>.Failure("Error retrieving reports by missing state: " + ex.Message);
+            return Result<PaginatedList<ReportDto>>.Failure("Error retrieving reports by missing state: " + ex.Message);
         }
     }
+
+    public async Task<Result<PaginatedList<ReportDto>>> GetArchivedReportsAsync(
+        int pageNumber = 1,
+        int pageSize = 10,
+        bool includeComments = false)
+    {
+        try
+        {
+            var query = _context.Reports
+                .Include(r => r.Center)
+                .Include(r => r.Government)
+                .Include(r => r.User)
+                .Include(r => r.MissingPerson)
+                    .ThenInclude(mp => mp.Images)
+                .Include(r => r.MissingThing)
+                    .ThenInclude(mt => mt.Images)
+                .Where(r => r.IsDeleted)
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var reports = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var reportDtos = reports.Select(r => ReportDto.FromEntity(r)).ToList();
+
+            if (includeComments)
+            {
+                foreach (var reportDto in reportDtos)
+                {
+                    var comments = await _context.Comments
+                        .Where(c => c.ReportId == reportDto.Id && !c.IsDeleted)
+                        .Include(c => c.User)
+                        .Include(c => c.Replies.Where(r => !r.IsDeleted))
+                        .ThenInclude(r => r.User)
+                        .OrderByDescending(c => c.CreatedAt)
+                        .ToListAsync();
+
+                    reportDto.Comments = comments.Select(CommentDto.FromEntity).ToList();
+                }
+            }
+
+            var paginatedList = new PaginatedList<ReportDto>(
+                reportDtos,
+                totalCount,
+                pageNumber,
+                pageSize);
+
+            return Result<PaginatedList<ReportDto>>.Success(paginatedList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving archived reports");
+            return Result<PaginatedList<ReportDto>>.Failure("Error retrieving archived reports: " + ex.Message);
+        }
+    }
+
 
     public async Task<Result<IEnumerable<Center>>> GetAllCentersAsync()
     {
@@ -582,6 +676,74 @@ public class MissingPersonService : IMissingPersonService
         {
             _logger.LogError(ex, "Error retrieving comments for report {ReportId}", reportId);
             return Result<IEnumerable<CommentDto>>.Failure("Error retrieving comments: " + ex.Message);
+        }
+    }
+
+    // Add this method to your existing MissingPersonService class
+    public async Task<Result<PaginatedList<ReportDto>>> GetReportsAsync(
+        int pageNumber, 
+        int pageSize, 
+        ReportSubjectType? reportSubjectType = null, 
+        bool includeComments = false)
+    {
+        try
+        {
+            var query = _context.Reports
+                .Where(r => !r.IsDeleted && !r.IsHidden)
+                .AsQueryable();
+    
+            if (reportSubjectType.HasValue)
+            {
+                query = query.Where(r => r.ReportSubjectType == reportSubjectType.Value);
+            }
+    
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+    
+            // Apply pagination
+            var reports = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Include(r => r.User)
+                .Include(r => r.Government)
+                .Include(r => r.Center)
+                .Include(r => r.MissingThing)
+                .ThenInclude(m=>m.Images)
+                .Include(r => r.MissingPerson)
+                .ThenInclude(mp => mp.Images)
+                .ToListAsync();
+    
+            var reportDtos = reports.Select(r => ReportDto.FromEntity(r)).ToList();
+    
+            // Include comments if requested
+            if (includeComments)
+            {
+                foreach (var reportDto in reportDtos)
+                {
+                    var comments = await _context.Comments
+                        .Where(c => c.ReportId == reportDto.Id && !c.IsDeleted)
+                        .Include(c => c.User)
+                        .Include(c => c.Replies.Where(r => !r.IsDeleted))
+                        .ThenInclude(r => r.User)
+                        .OrderByDescending(c => c.CreatedAt)
+                        .ToListAsync();
+    
+                    reportDto.Comments = comments.Select(CommentDto.FromEntity).ToList();
+                }
+            }
+    
+            var paginatedList = new PaginatedList<ReportDto>(
+                reportDtos, 
+                totalCount, 
+                pageNumber, 
+                pageSize);
+    
+            return Result<PaginatedList<ReportDto>>.Success(paginatedList);
+        }
+        catch (Exception ex)
+        {
+            return Result<PaginatedList<ReportDto>>.Failure($"Error retrieving reports: {ex.Message}");
         }
     }
 }

@@ -46,10 +46,17 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet("users")]
-        [ProducesResponseType(typeof(Result<List<UserDto>>), 200)]
-        public async Task<ActionResult<Result<List<UserDto>>>> GetAllUsers()
+        [ProducesResponseType(typeof(Result<PaginatedList<UserDto>>), 200)]
+        public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllUsers(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var result = await _mediator.Send(new GetAllUsersQuery());
+            var query = new GetAllUsersQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 
@@ -124,10 +131,17 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet("admins")]
-        [ProducesResponseType(typeof(Result<List<UserDto>>), 200)]
-        public async Task<ActionResult<Result<List<UserDto>>>> GetAllAdmins()
+        [ProducesResponseType(typeof(Result<PaginatedList<UserDto>>), 200)]
+        public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllAdmins(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var result = await _mediator.Send(new GetAllAdminsQuery());
+            var query = new GetAllAdminsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 
@@ -208,26 +222,53 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet("reports/archived")]
-        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
-        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetArchivedPosts()
+        [ProducesResponseType(typeof(Result<PaginatedList<ReportDto>>), 200)]
+        public async Task<ActionResult<Result<PaginatedList<ReportDto>>>> GetArchivedPosts(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includeComments = false)
         {
-            var result = await _mediator.Send(new GetArchivedReportsQuery());
+            var query = new GetArchivedReportsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                IncludeComments = includeComments
+            };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 
         [HttpGet("reports")]
-        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
-        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetAllPosts()
+        [ProducesResponseType(typeof(Result<PaginatedList<ReportDto>>), 200)]
+        public async Task<ActionResult<Result<PaginatedList<ReportDto>>>> GetAllPosts(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includeComments = false)
         {
-            var result = await _mediator.Send(new GetAllPostsQuery());
+            var query = new GetAllPostsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                IncludeComments = includeComments
+            };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 
         [HttpGet("reports/things")]
-        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
-        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetPostThings()
+        [ProducesResponseType(typeof(Result<PaginatedList<ReportDto>>), 200)]
+        public async Task<ActionResult<Result<PaginatedList<ReportDto>>>> GetPostThings(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includeComments = false)
         {
-            var result = await _mediator.Send(new GetPostThingsQuery());
+            var query = new GetPostThingsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                IncludeComments = includeComments
+            };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 

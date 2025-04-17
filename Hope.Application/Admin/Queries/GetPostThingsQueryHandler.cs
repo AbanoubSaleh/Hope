@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hope.Application.Admin.Queries
 {
-    public class GetPostThingsQueryHandler : IRequestHandler<GetPostThingsQuery, Result<IEnumerable<ReportDto>>>
+    public class GetPostThingsQueryHandler : IRequestHandler<GetPostThingsQuery, Result<PaginatedList<ReportDto>>>
     {
         private readonly IAdminService _adminService;
         private readonly ILogger<GetPostThingsQueryHandler> _logger;
@@ -23,16 +23,16 @@ namespace Hope.Application.Admin.Queries
             _logger = logger;
         }
 
-        public async Task<Result<IEnumerable<ReportDto>>> Handle(GetPostThingsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PaginatedList<ReportDto>>> Handle(GetPostThingsQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                return await _adminService.GetPostThingsAsync();
+                return await _adminService.GetPostThingsAsync(request.PageNumber, request.PageSize, request.IncludeComments);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving post things");
-                return Result<IEnumerable<ReportDto>>.Failure($"Error retrieving post things: {ex.Message}");
+                return Result<PaginatedList<ReportDto>>.Failure("Error retrieving post things: " + ex.Message);
             }
         }
     }

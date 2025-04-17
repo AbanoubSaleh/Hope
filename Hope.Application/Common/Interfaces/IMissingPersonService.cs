@@ -17,8 +17,12 @@ namespace Hope.Application.Common.Interfaces
         // New method using DTO
         Task<Result<Guid>> CreateCompleteReportAsync(CreateReportDto reportDto);
             
-        Task<Result<IEnumerable<ReportDto>>> GetReportsAsync(          
-            ReportSubjectType? subjectType = null);
+        // Add this method to the existing interface
+        Task<Result<PaginatedList<ReportDto>>> GetReportsAsync(
+            int pageNumber, 
+            int pageSize, 
+            ReportSubjectType? reportSubjectType = null, 
+            bool includeComments = false);
             
         Task<Result<ReportDto>> GetReportByIdAsync(Guid reportId);
         
@@ -30,14 +34,21 @@ namespace Hope.Application.Common.Interfaces
         Task<Result<bool>> UpdateReportImageAsync(Guid reportId, ImageDto image);
         
         // New method to get reports by missing state
-        Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null);
+        Task<Result<PaginatedList<ReportDto>>> GetReportsByMissingStateAsync(
+            MissingState? missingState = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            bool includeComments = false);
         
         // New methods for hiding, deleting, and retrieving archived reports
         Task<Result<bool>> HideReportAsync(Guid reportId);
         
         Task<Result<bool>> DeleteReportAsync(Guid reportId);
         
-        Task<Result<IEnumerable<ReportDto>>> GetArchivedReportsAsync();
+        Task<Result<PaginatedList<ReportDto>>> GetArchivedReportsAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            bool includeComments = false);
         
         // New method for updating reports
         Task<Result<bool>> UpdateReportAsync(UpdateReportDto updateDto);

@@ -44,15 +44,20 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
+        [ProducesResponseType(typeof(Result<PaginatedList<ReportDto>>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
-        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetReports(
-            
-            [FromQuery] ReportSubjectType? reportSubjectType = null)
+        public async Task<ActionResult<Result<PaginatedList<ReportDto>>>> GetReports(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ReportSubjectType? reportSubjectType = null,
+            [FromQuery] bool includeComments = true)
         {
             var query = new GetReportsQuery
             {
-                ReportSubjectType = reportSubjectType
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                ReportSubjectType = reportSubjectType,
+                IncludeComments = includeComments
             };
 
             var result = await _mediator.Send(query);
@@ -66,14 +71,20 @@ namespace Hope.Api.Controllers
         }
 
         [HttpGet("by-missing-state")]
-        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
+        [ProducesResponseType(typeof(Result<PaginatedList<ReportDto>>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
-        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetReportsByMissingState(
-            [FromQuery] MissingState? missingState = null)
+        public async Task<ActionResult<Result<PaginatedList<ReportDto>>>> GetReportsByMissingState(
+            [FromQuery] MissingState? missingState = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includeComments = true)
         {
             var query = new GetReportsByMissingStateQuery
             {
-                MissingState = missingState
+                MissingState = missingState,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                IncludeComments = includeComments
             };
 
             var result = await _mediator.Send(query);
@@ -86,6 +97,29 @@ namespace Hope.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("archived")]
+        [ProducesResponseType(typeof(Result<PaginatedList<ReportDto>>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        public async Task<ActionResult<Result<PaginatedList<ReportDto>>>> GetArchivedReports(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includeComments = true)
+        {
+            var query = new GetArchivedReportsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                IncludeComments = includeComments
+            };
+            var result = await _mediator.Send(query);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(Result<ReportDto>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
@@ -168,21 +202,21 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
-        [HttpGet("archived")]
-        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
-        [ProducesResponseType(typeof(Result), 400)]
-        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetArchivedReports()
-        {
-            var query = new GetArchivedReportsQuery();
-            var result = await _mediator.Send(query);
+        //[HttpGet("archived")]
+        //[ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
+        //[ProducesResponseType(typeof(Result), 400)]
+        //public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetArchivedReports()
+        //{
+        //    var query = new GetArchivedReportsQuery();
+        //    var result = await _mediator.Send(query);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result);
-            }
+        //    if (!result.Succeeded)
+        //    {
+        //        return BadRequest(result);
+        //    }
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
         [HttpPut]
         [ProducesResponseType(typeof(Result<bool>), 200)]
         [ProducesResponseType(typeof(Result), 400)]

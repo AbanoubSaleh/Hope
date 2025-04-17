@@ -1,15 +1,13 @@
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.DTOs;
-using Hope.Domain.Entities;
 using MediatR;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Hope.Application.MissingPerson.Queries.GetReports
 {
-    public class GetReportsQueryHandler : IRequestHandler<GetReportsQuery, Result<IEnumerable<ReportDto>>>
+    public class GetReportsQueryHandler : IRequestHandler<GetReportsQuery, Result<PaginatedList<ReportDto>>>
     {
         private readonly IMissingPersonService _missingPersonService;
 
@@ -18,10 +16,13 @@ namespace Hope.Application.MissingPerson.Queries.GetReports
             _missingPersonService = missingPersonService;
         }
 
-        public async Task<Result<IEnumerable<ReportDto>>> Handle(GetReportsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PaginatedList<ReportDto>>> Handle(GetReportsQuery request, CancellationToken cancellationToken)
         {
             return await _missingPersonService.GetReportsAsync(
-                request.ReportSubjectType);
+                request.PageNumber,
+                request.PageSize,
+                request.ReportSubjectType,
+                request.IncludeComments);
         }
     }
 }

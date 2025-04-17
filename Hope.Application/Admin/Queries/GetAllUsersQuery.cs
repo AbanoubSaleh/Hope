@@ -5,7 +5,9 @@ using System.Collections.Generic;
 
 namespace Hope.Application.Admin.Queries
 {
-    public class GetAllUsersQuery : IRequest<Result<List<UserDto>>>
+    public class GetAllUsersQuery : IRequest<Result<PaginatedList<UserDto>>>
     {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }

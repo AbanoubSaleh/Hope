@@ -1,4 +1,5 @@
-﻿using Hope.Application.LookUps.Dtos;
+﻿using Hope.Application.Comments.DTOs;
+using Hope.Application.LookUps.Dtos;
 using Hope.Domain.Entities;
 using Hope.Domain.Enums;
 
@@ -21,6 +22,8 @@ public class ReportDto
     public string ? CreatedBy { get; set; }
     public bool IsHidden { get; set; } = false;
 
+    // Add this property to the existing ReportDto class
+    public List<CommentDto> Comments { get; set; } = new List<CommentDto>();
 
     public static ReportDto FromEntity(Report report)
     {

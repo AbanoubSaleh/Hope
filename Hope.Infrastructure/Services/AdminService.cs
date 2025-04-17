@@ -1,4 +1,5 @@
 using Hope.Application.Admin.DTOs;
+using Hope.Application.Comments.DTOs;
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.DTOs;
@@ -95,11 +96,18 @@ namespace Hope.Infrastructure.Services
             }
         }
 
-        public async Task<Result<List<UserDto>>> GetAllUsersAsync()
+        public async Task<Result<PaginatedList<UserDto>>> GetAllUsersAsync(int pageNumber, int pageSize)
         {
             try
             {
-                var users = await _userManager.Users.ToListAsync();
+                var usersQuery = _userManager.Users;
+                var totalCount = await usersQuery.CountAsync();
+                
+                var users = await usersQuery
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+                    
                 var userDtos = new List<UserDto>();
 
                 foreach (var user in users)
@@ -116,12 +124,238 @@ namespace Hope.Infrastructure.Services
                     });
                 }
 
-                return Result<List<UserDto>>.Success(userDtos);
+                var paginatedList = new PaginatedList<UserDto>(
+                    userDtos,
+                    totalCount,
+                    pageNumber,
+                    pageSize);
+
+                return Result<PaginatedList<UserDto>>.Success(paginatedList);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting all users");
-                return Result<List<UserDto>>.Failure("Error getting all users: " + ex.Message);
+                return Result<PaginatedList<UserDto>>.Failure("Error getting all users: " + ex.Message);
+            }
+        }
+
+        public async Task<Result<PaginatedList<UserDto>>> GetAllAdminsAsync(int pageNumber, int pageSize)
+        {
+            try
+            {
+                var adminRole = await _roleManager.FindByNameAsync("Admin");
+                if (adminRole == null)
+                {
+                    return Result<PaginatedList<UserDto>>.Success(new PaginatedList<UserDto>(
+                        new List<UserDto>(), 0, pageNumber, pageSize));
+                }
+
+                var userRoles = _context.UserRoles.Where(ur => ur.RoleId == adminRole.Id);
+                
+                var query = from user in _userManager.Users
+                            join ur in userRoles on user.Id equals ur.UserId
+                            select user;
+                            
+                var totalCount = await query.CountAsync();
+                
+                var adminUsers = await query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var adminDtos = new List<UserDto>();
+                foreach (var admin in adminUsers)
+                {
+                    var roles = await _userManager.GetRolesAsync(admin);
+                    adminDtos.Add(new UserDto
+                    {
+                        Id = admin.Id,
+                        UserName = admin.UserName,
+                        Email = admin.Email,
+                        PhoneNumber = admin.PhoneNumber,
+                        CreatedAt = admin.CreatedAt,
+                        Roles = roles.ToList()
+                    });
+                }
+
+                var paginatedList = new PaginatedList<UserDto>(
+                    adminDtos,
+                    totalCount,
+                    pageNumber,
+                    pageSize);
+
+                return Result<PaginatedList<UserDto>>.Success(paginatedList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all admins");
+                return Result<PaginatedList<UserDto>>.Failure("Error getting all admins: " + ex.Message);
+            }
+        }
+
+        public async Task<Result<PaginatedList<ReportDto>>> GetAllPostsAsync(int pageNumber, int pageSize, bool includeComments)
+        {
+            try
+            {
+                var query = _context.Reports
+                    .Include(r => r.Center)
+                    .Include(r => r.Government)
+                    .Include(r => r.User)
+                    .Include(r => r.MissingPerson)
+                        .ThenInclude(mp => mp.Images)
+                    .Include(r => r.MissingThing)
+                        .ThenInclude(mt => mt.Images)
+                    .Where(r => !r.IsDeleted)
+                    .AsQueryable();
+
+                var totalCount = await query.CountAsync();
+
+                var reports = await query
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var reportDtos = reports.Select(r => ReportDto.FromEntity(r)).ToList();
+
+                if (includeComments)
+                {
+                    foreach (var reportDto in reportDtos)
+                    {
+                        var comments = await _context.Comments
+                            .Where(c => c.ReportId == reportDto.Id && !c.IsDeleted)
+                            .Include(c => c.User)
+                            .Include(c => c.Replies.Where(r => !r.IsDeleted))
+                            .ThenInclude(r => r.User)
+                            .OrderByDescending(c => c.CreatedAt)
+                            .ToListAsync();
+
+                        reportDto.Comments = comments.Select(CommentDto.FromEntity).ToList();
+                    }
+                }
+
+                var paginatedList = new PaginatedList<ReportDto>(
+                    reportDtos,
+                    totalCount,
+                    pageNumber,
+                    pageSize);
+
+                return Result<PaginatedList<ReportDto>>.Success(paginatedList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all posts");
+                return Result<PaginatedList<ReportDto>>.Failure("Error retrieving all posts: " + ex.Message);
+            }
+        }
+
+        public async Task<Result<PaginatedList<ReportDto>>> GetPostThingsAsync(int pageNumber, int pageSize, bool includeComments)
+        {
+            try
+            {
+                var query = _context.Reports
+                    .Include(r => r.Center)
+                    .Include(r => r.Government)
+                    .Include(r => r.User)
+                    .Include(r => r.MissingThing)
+                        .ThenInclude(mt => mt.Images)
+                    .Where(r => r.ReportSubjectType == ReportSubjectType.Thing && !r.IsDeleted)
+                    .AsQueryable();
+
+                var totalCount = await query.CountAsync();
+
+                var reports = await query
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var reportDtos = reports.Select(r => ReportDto.FromEntity(r)).ToList();
+
+                if (includeComments)
+                {
+                    foreach (var reportDto in reportDtos)
+                    {
+                        var comments = await _context.Comments
+                            .Where(c => c.ReportId == reportDto.Id && !c.IsDeleted)
+                            .Include(c => c.User)
+                            .Include(c => c.Replies.Where(r => !r.IsDeleted))
+                            .ThenInclude(r => r.User)
+                            .OrderByDescending(c => c.CreatedAt)
+                            .ToListAsync();
+
+                        reportDto.Comments = comments.Select(CommentDto.FromEntity).ToList();
+                    }
+                }
+
+                var paginatedList = new PaginatedList<ReportDto>(
+                    reportDtos,
+                    totalCount,
+                    pageNumber,
+                    pageSize);
+
+                return Result<PaginatedList<ReportDto>>.Success(paginatedList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving post things");
+                return Result<PaginatedList<ReportDto>>.Failure("Error retrieving post things: " + ex.Message);
+            }
+        }
+
+        public async Task<Result<PaginatedList<ReportDto>>> GetArchivedReportsAsync(int pageNumber, int pageSize, bool includeComments)
+        {
+            try
+            {
+                var query = _context.Reports
+                    .Include(r => r.Center)
+                    .Include(r => r.Government)
+                    .Include(r => r.User)
+                    .Include(r => r.MissingPerson)
+                        .ThenInclude(mp => mp.Images)
+                    .Include(r => r.MissingThing)
+                        .ThenInclude(mt => mt.Images)
+                    .Where(r => r.IsDeleted)
+                    .AsQueryable();
+
+                var totalCount = await query.CountAsync();
+
+                var reports = await query
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var reportDtos = reports.Select(r => ReportDto.FromEntity(r)).ToList();
+
+                if (includeComments)
+                {
+                    foreach (var reportDto in reportDtos)
+                    {
+                        var comments = await _context.Comments
+                            .Where(c => c.ReportId == reportDto.Id && !c.IsDeleted)
+                            .Include(c => c.User)
+                            .Include(c => c.Replies.Where(r => !r.IsDeleted))
+                            .ThenInclude(r => r.User)
+                            .OrderByDescending(c => c.CreatedAt)
+                            .ToListAsync();
+
+                        reportDto.Comments = comments.Select(CommentDto.FromEntity).ToList();
+                    }
+                }
+
+                var paginatedList = new PaginatedList<ReportDto>(
+                    reportDtos,
+                    totalCount,
+                    pageNumber,
+                    pageSize);
+
+                return Result<PaginatedList<ReportDto>>.Success(paginatedList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving archived reports");
+                return Result<PaginatedList<ReportDto>>.Failure("Error retrieving archived reports: " + ex.Message);
             }
         }
 
