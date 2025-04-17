@@ -20,6 +20,7 @@ namespace Hope.Infrastructure
         public DbSet<Center> Centers { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Reply> Replies { get; set; }
         public DbSet<MissingPerson> MissingPersons { get; set; }
         public DbSet<MissingPersonImage> MissingPersonImages { get; set; }
         
@@ -82,7 +83,13 @@ namespace Hope.Infrastructure
                 .WithOne(i => i.MissingThing)
                 .HasForeignKey(i => i.MissingThingId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
+            builder.Entity<Reply>()
+           .HasOne(r => r.Comment)
+           .WithMany(c => c.Replies)
+           .HasForeignKey(r => r.CommentId)
+           .OnDelete(DeleteBehavior.NoAction);
+
             // Seed data
             builder.Seed();
         }
