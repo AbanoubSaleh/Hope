@@ -28,5 +28,12 @@ namespace Hope.Application.Common.Interfaces
         
         // New method to get reports by missing state
         Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null);
+        
+        // New methods for hiding, deleting, and retrieving archived reports
+        Task<Result<bool>> HideReportAsync(Guid reportId);
+        
+        Task<Result<bool>> DeleteReportAsync(Guid reportId);
+        
+        Task<Result<IEnumerable<ReportDto>>> GetArchivedReportsAsync();
     }
 }

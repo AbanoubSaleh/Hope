@@ -82,6 +82,8 @@ namespace Hope.Infrastructure
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IMissingPersonService, MissingPersonService>();
 
+            // Add this to the ConfigureServices method
+            services.AddScoped<IAdminService, AdminService>();
             return services;
         }
     }

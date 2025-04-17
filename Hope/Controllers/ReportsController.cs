@@ -1,6 +1,9 @@
 using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.Commands.CreateMissingPersonReport;
+using Hope.Application.MissingPerson.Commands.DeleteReport;
+using Hope.Application.MissingPerson.Commands.HideReport;
 using Hope.Application.MissingPerson.DTOs;
+using Hope.Application.MissingPerson.Queries.GetArchivedReports;
 using Hope.Application.MissingPerson.Queries.GetReportById;
 using Hope.Application.MissingPerson.Queries.GetReports;
 using Hope.Application.MissingPerson.Queries.GetReportsByMissingState;
@@ -105,6 +108,63 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
-        
+
+        [HttpPut("{id}/hide")]
+        [ProducesResponseType(typeof(Result<bool>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        [ProducesResponseType(typeof(Result), 404)]
+        public async Task<ActionResult<Result<bool>>> HideReport(Guid id)
+        {
+            var command = new HideReportCommand { ReportId = id };
+            var result = await _mediator.Send(command);
+
+            if (!result.Succeeded)
+            {
+                if (result.Message!.Contains("not found"))
+                {
+                    return NotFound(result);
+                }
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(Result<bool>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        [ProducesResponseType(typeof(Result), 404)]
+        public async Task<ActionResult<Result<bool>>> DeleteReport(Guid id)
+        {
+            var command = new DeleteReportCommand { ReportId = id };
+            var result = await _mediator.Send(command);
+
+            if (!result.Succeeded)
+            {
+                if (result.Message!.Contains("not found"))
+                {
+                    return NotFound(result);
+                }
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("archived")]
+        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetArchivedReports()
+        {
+            var query = new GetArchivedReportsQuery();
+            var result = await _mediator.Send(query);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

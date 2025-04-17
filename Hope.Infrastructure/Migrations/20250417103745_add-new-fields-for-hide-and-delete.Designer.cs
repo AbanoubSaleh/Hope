@@ -4,6 +4,7 @@ using Hope.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hope.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250417103745_add-new-fields-for-hide-and-delete")]
+    partial class addnewfieldsforhideanddelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,7 +136,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("GovernmentId");
 
-                    b.ToTable("Centers", (string)null);
+                    b.ToTable("Centers");
 
                     b.HasData(
                         new
@@ -1988,7 +1991,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EmailConfirmationCodes", (string)null);
+                    b.ToTable("EmailConfirmationCodes");
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.Government", b =>
@@ -2013,7 +2016,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Governments", (string)null);
+                    b.ToTable("Governments");
 
                     b.HasData(
                         new
@@ -2238,7 +2241,7 @@ namespace Hope.Infrastructure.Migrations
                     b.HasIndex("ReportId")
                         .IsUnique();
 
-                    b.ToTable("MissingPersons", (string)null);
+                    b.ToTable("MissingPersons");
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.MissingPersonImage", b =>
@@ -2258,7 +2261,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("MissingPersonId");
 
-                    b.ToTable("MissingPersonImages", (string)null);
+                    b.ToTable("MissingPersonImages");
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.MissingThing", b =>
@@ -2283,7 +2286,7 @@ namespace Hope.Infrastructure.Migrations
                     b.HasIndex("ReportId")
                         .IsUnique();
 
-                    b.ToTable("MissingThings", (string)null);
+                    b.ToTable("MissingThings");
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.MissingThingImage", b =>
@@ -2303,7 +2306,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("MissingThingId");
 
-                    b.ToTable("MissingThingImages", (string)null);
+                    b.ToTable("MissingThingImages");
                 });
 
             modelBuilder.Entity("Hope.Domain.Entities.Report", b =>
@@ -2354,7 +2357,7 @@ namespace Hope.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reports", (string)null);
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

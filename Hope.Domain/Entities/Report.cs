@@ -86,5 +86,10 @@ namespace Hope.Domain.Entities
                 
             MissingThing = missingThing ?? throw new ArgumentNullException(nameof(missingThing));
         }
+        
+        // Add these properties to your Report entity
+        public bool IsHidden { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
     }
 }

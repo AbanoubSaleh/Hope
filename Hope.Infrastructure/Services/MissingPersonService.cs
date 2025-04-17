@@ -120,7 +120,6 @@ public class MissingPersonService : IMissingPersonService
     }
 
     public async Task<Result<IEnumerable<ReportDto>>> GetReportsAsync(
-        
         ReportSubjectType? subjectType = null)
     {
         try
@@ -131,8 +130,9 @@ public class MissingPersonService : IMissingPersonService
                 .Include(r => r.User)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
-                    .Include(r => r.MissingThing)
+                .Include(r => r.MissingThing)
                     .ThenInclude(mt => mt.Images)
+                .Where(r => !r.IsDeleted && !r.IsHidden) // Exclude deleted and hidden reports
                 .AsQueryable();
 
             if (subjectType.HasValue)
@@ -141,7 +141,7 @@ public class MissingPersonService : IMissingPersonService
             }
 
             var reports = await query.ToListAsync();
-            return Result<IEnumerable<ReportDto>>.Success(reports.Select(x=> ReportDto.FromEntity(x)));
+            return Result<IEnumerable<ReportDto>>.Success(reports.Select(x => ReportDto.FromEntity(x)));
         }
         catch (Exception ex)
         {
@@ -160,21 +160,54 @@ public class MissingPersonService : IMissingPersonService
                 .Include(r => r.User)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
-                    .Include(r => r.MissingThing)
+                .Include(r => r.MissingThing)
                     .ThenInclude(mt => mt.Images)
-                .FirstOrDefaultAsync(r => r.Id == reportId);
+                .FirstOrDefaultAsync(r => r.Id == reportId && !r.IsDeleted); // Allow hidden but not deleted
 
             if (report == null)
             {
                 return Result<ReportDto>.Failure("Report not found");
             }
 
-            return Result<ReportDto>.Success( ReportDto.FromEntity(report));
+            return Result<ReportDto>.Success(ReportDto.FromEntity(report));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving report {ReportId}", reportId);
             return Result<ReportDto>.Failure("Error retrieving report: " + ex.Message);
+        }
+    }
+
+    // Also update the GetReportsByMissingStateAsync method
+    public async Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null)
+    {
+        try
+        {
+            var query = _context.Reports
+                .Include(r => r.Center)
+                .Include(r => r.Government)
+                .Include(r => r.User)
+                .Include(r => r.MissingPerson)
+                    .ThenInclude(mp => mp.Images)
+                .Where(r => r.ReportSubjectType == ReportSubjectType.Person) // Only include person reports
+                .Where(r => !r.IsDeleted && !r.IsHidden) // Exclude deleted and hidden reports
+                .AsQueryable();
+    
+            if (missingState.HasValue)
+            {
+                // Filter by missing state - only for missing persons
+                query = query.Where(r => 
+                    r.MissingPerson != null && 
+                    r.MissingPerson.State == missingState.Value);
+            }
+    
+            var reports = await query.ToListAsync();
+            return Result<IEnumerable<ReportDto>>.Success(reports.Select(x => ReportDto.FromEntity(x)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving reports by missing state");
+            return Result<IEnumerable<ReportDto>>.Failure("Error retrieving reports by missing state: " + ex.Message);
         }
     }
 
@@ -338,7 +371,54 @@ public class MissingPersonService : IMissingPersonService
 
     // ...
 
-    public async Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null)
+    public async Task<Result<bool>> HideReportAsync(Guid reportId)
+    {
+        try
+        {
+            var report = await _context.Reports.FindAsync(reportId);
+            if (report == null)
+            {
+                return Result<bool>.Failure("Report not found");
+            }
+
+            report.IsHidden = true;
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Report with ID {ReportId} has been hidden", reportId);
+            return Result<bool>.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error hiding report {ReportId}", reportId);
+            return Result<bool>.Failure("Error hiding report: " + ex.Message);
+        }
+    }
+
+    public async Task<Result<bool>> DeleteReportAsync(Guid reportId)
+    {
+        try
+        {
+            var report = await _context.Reports.FindAsync(reportId);
+            if (report == null)
+            {
+                return Result<bool>.Failure("Report not found");
+            }
+
+            report.IsDeleted = true;
+            report.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Report with ID {ReportId} has been soft deleted", reportId);
+            return Result<bool>.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting report {ReportId}", reportId);
+            return Result<bool>.Failure("Error deleting report: " + ex.Message);
+        }
+    }
+
+    public async Task<Result<IEnumerable<ReportDto>>> GetArchivedReportsAsync()
     {
         try
         {
@@ -348,24 +428,18 @@ public class MissingPersonService : IMissingPersonService
                 .Include(r => r.User)
                 .Include(r => r.MissingPerson)
                     .ThenInclude(mp => mp.Images)
-                .Where(r => r.ReportSubjectType == ReportSubjectType.Person) // Only include person reports
+                .Include(r => r.MissingThing)
+                    .ThenInclude(mt => mt.Images)
+                .Where(r => r.IsDeleted)
                 .AsQueryable();
-    
-            if (missingState.HasValue)
-            {
-                // Filter by missing state - only for missing persons
-                query = query.Where(r => 
-                    r.MissingPerson != null && 
-                    r.MissingPerson.State == missingState.Value);
-            }
-    
+
             var reports = await query.ToListAsync();
             return Result<IEnumerable<ReportDto>>.Success(reports.Select(x => ReportDto.FromEntity(x)));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving reports by missing state");
-            return Result<IEnumerable<ReportDto>>.Failure("Error retrieving reports by missing state: " + ex.Message);
+            _logger.LogError(ex, "Error retrieving archived reports");
+            return Result<IEnumerable<ReportDto>>.Failure("Error retrieving archived reports: " + ex.Message);
         }
     }
 }
