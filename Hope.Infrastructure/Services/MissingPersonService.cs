@@ -335,4 +335,37 @@ public class MissingPersonService : IMissingPersonService
             return Result<bool>.Failure("Error updating report image: " + ex.Message);
         }
     }
+
+    // ...
+
+    public async Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null)
+    {
+        try
+        {
+            var query = _context.Reports
+                .Include(r => r.Center)
+                .Include(r => r.Government)
+                .Include(r => r.User)
+                .Include(r => r.MissingPerson)
+                    .ThenInclude(mp => mp.Images)
+                .Where(r => r.ReportSubjectType == ReportSubjectType.Person) // Only include person reports
+                .AsQueryable();
+    
+            if (missingState.HasValue)
+            {
+                // Filter by missing state - only for missing persons
+                query = query.Where(r => 
+                    r.MissingPerson != null && 
+                    r.MissingPerson.State == missingState.Value);
+            }
+    
+            var reports = await query.ToListAsync();
+            return Result<IEnumerable<ReportDto>>.Success(reports.Select(x => ReportDto.FromEntity(x)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving reports by missing state");
+            return Result<IEnumerable<ReportDto>>.Failure("Error retrieving reports by missing state: " + ex.Message);
+        }
+    }
 }

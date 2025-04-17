@@ -25,5 +25,8 @@ namespace Hope.Application.Common.Interfaces
         Task<Result<IEnumerable<CenterDto>>> GetCentersByGovernmentIdAsync(int governmentId);
         
         Task<Result<bool>> UpdateReportImageAsync(Guid reportId, ImageDto image);
+        
+        // New method to get reports by missing state
+        Task<Result<IEnumerable<ReportDto>>> GetReportsByMissingStateAsync(MissingState? missingState = null);
     }
 }

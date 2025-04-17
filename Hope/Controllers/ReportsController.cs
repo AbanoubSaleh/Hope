@@ -3,6 +3,7 @@ using Hope.Application.MissingPerson.Commands.CreateMissingPersonReport;
 using Hope.Application.MissingPerson.DTOs;
 using Hope.Application.MissingPerson.Queries.GetReportById;
 using Hope.Application.MissingPerson.Queries.GetReports;
+using Hope.Application.MissingPerson.Queries.GetReportsByMissingState;
 using Hope.Domain.Entities;
 using Hope.Domain.Enums;
 using MediatR;
@@ -63,6 +64,27 @@ namespace Hope.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("by-missing-state")]
+        [ProducesResponseType(typeof(Result<IEnumerable<ReportDto>>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        public async Task<ActionResult<Result<IEnumerable<ReportDto>>>> GetReportsByMissingState(
+            [FromQuery] MissingState? missingState = null)
+        {
+            var query = new GetReportsByMissingStateQuery
+            {
+                MissingState = missingState
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(Result<ReportDto>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
@@ -83,5 +105,6 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
+        
     }
 }
