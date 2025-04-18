@@ -22,10 +22,12 @@ namespace Hope.Api.Controllers
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IWebHostEnvironment _environment;
 
-        public ReportsController(IMediator mediator)
+        public ReportsController(IMediator mediator, IWebHostEnvironment environment)
         {
             _mediator = mediator;
+            _environment = environment;
         }
 
         [HttpPost]
@@ -237,5 +239,20 @@ namespace Hope.Api.Controllers
         
             return Ok(result);
         }
+        [HttpGet("api/faces")]
+        public IActionResult GetFaceImages()
+        {
+            var folderPath = Path.Combine(_environment.WebRootPath, "uploads", "report-images");
+
+            if (!Directory.Exists(folderPath))
+                return NotFound("Folder does not exist.");
+
+            var files = Directory.GetFiles(folderPath)
+                                 .Where(f => f.EndsWith(".jpg") || f.EndsWith(".png"))
+                                 .Select(f => $"{Request.Scheme}://{Request.Host}/uploads/report-images/{Path.GetFileName(f)}");
+
+            return Ok(files);
+        }
+
     }
 }
