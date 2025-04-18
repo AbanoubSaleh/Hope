@@ -119,7 +119,7 @@ var app = builder.Build();
 //}
 app.UseStaticFiles();
 app.UseHttpsRedirection();
-
+app.UseCors("CorsPolicy");
 // Add request localization middleware
 app.UseRequestLocalization();
 
