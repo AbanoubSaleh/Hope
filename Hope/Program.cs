@@ -9,12 +9,18 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Http;
 using Hope.Infrastructure.Persistence;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSingleton(new Cloudinary(new Account(
+    "dmijfuun4",
+    "879857692416225",
+    "znf_0MgUCA9cg9-FxkdTrcugb7M"
+)));
 
 builder.Services.AddCors(options =>
 {
@@ -119,6 +125,8 @@ app.UseRequestLocalization();
 
 // Add exception handling middleware
 app.UseMiddleware<Hope.Api.Middleware.ExceptionHandlingMiddleware>();
+
+
 
 app.UseAuthentication();
 app.UseAuthorization();

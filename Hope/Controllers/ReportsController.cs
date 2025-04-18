@@ -1,20 +1,21 @@
+using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.Commands.CreateMissingPersonReport;
 using Hope.Application.MissingPerson.Commands.DeleteReport;
 using Hope.Application.MissingPerson.Commands.HideReport;
 using Hope.Application.MissingPerson.Commands.UpdateMissingPersonReport;
 using Hope.Application.MissingPerson.DTOs;
+using Hope.Application.MissingPerson.Queries.FindReportByFace;
 using Hope.Application.MissingPerson.Queries.GetArchivedReports;
 using Hope.Application.MissingPerson.Queries.GetReportById;
 using Hope.Application.MissingPerson.Queries.GetReports;
 using Hope.Application.MissingPerson.Queries.GetReportsByMissingState;
-using Hope.Domain.Entities;
 using Hope.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hope.Api.Controllers
+namespace Hope.Controllers // Make sure this matches your actual namespace
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -184,7 +185,8 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
-        [HttpPut("reports/{id}/unhide")]
+
+        [HttpPut("{id}/unhide")]
         [ProducesResponseType(typeof(Result<bool>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
         [ProducesResponseType(typeof(Result), 404)]
@@ -225,7 +227,7 @@ namespace Hope.Api.Controllers
         [ProducesResponseType(typeof(Result), 404)]
         public async Task<ActionResult<Result<bool>>> UpdateReport([FromForm] UpdateMissingPersonReportCommand command)
         {
-            
+
             var result = await _mediator.Send(command);
 
             if (!result.Succeeded)
@@ -236,10 +238,10 @@ namespace Hope.Api.Controllers
                 }
                 return BadRequest(result);
             }
-        
+
             return Ok(result);
         }
-        [HttpGet("api/faces")]
+        [HttpGet("faces")]
         public IActionResult GetFaceImages()
         {
             var folderPath = Path.Combine(_environment.WebRootPath, "uploads", "report-images");
@@ -254,5 +256,33 @@ namespace Hope.Api.Controllers
             return Ok(files);
         }
 
+        // Replace the direct service usage with a query
+        [HttpPost("find-by-face")]
+        [ProducesResponseType(typeof(Result<ReportDto>), 200)]
+        [ProducesResponseType(typeof(Result), 400)]
+        public async Task<ActionResult<Result<ReportDto>>> FindByFace([FromForm] FindReportByFaceQuery query)
+        {
+            try
+            {
+                // Create and send the query through the mediator
+                var result = await _mediator.Send(query);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result);
+                }
+
+                if (result.Data == null)
+                {
+                    return Ok(Result<ReportDto>.Success(null, "No matching face found. Please consider creating a new missing person report."));
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(Result<ReportDto>.Failure($"Error processing face recognition: {ex.Message}"));
+            }
+        }
     }
 }
