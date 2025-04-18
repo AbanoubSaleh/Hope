@@ -30,12 +30,82 @@ namespace Hope.Infrastructure.Services
             _logger = logger;
             _imagesFolder = Path.Combine(_environment.WebRootPath, "uploads", "report-images");
             
-            // Initialize face detector
-            var faceXmlPath = Path.Combine(_environment.ContentRootPath, "FaceRecognition", "haarcascade_frontalface_default.xml");
+            // Initialize face detector with more flexible path resolution
+            string faceXmlPath = ResolveFaceDetectorPath();
             _faceDetector = new CascadeClassifier(faceXmlPath);
             
             // Initialize face recognizer
             _recognizer = LBPHFaceRecognizer.Create(1, 8, 8, 8, _similarityThreshold);
+        }
+
+        private string ResolveFaceDetectorPath()
+        {
+            // Try multiple possible locations for the cascade file
+            var possiblePaths = new[]
+            {
+                // Content root location
+                Path.Combine(_environment.ContentRootPath, "FaceRecognition", "haarcascade_frontalface_default.xml"),
+                
+                // Web root location
+                Path.Combine(_environment.WebRootPath, "FaceRecognition", "haarcascade_frontalface_default.xml"),
+                
+                // Parent of web root (for some deployment scenarios)
+                Path.Combine(Directory.GetParent(_environment.WebRootPath).FullName, "FaceRecognition", "haarcascade_frontalface_default.xml"),
+                
+                // Embedded in the application directory
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FaceRecognition", "haarcascade_frontalface_default.xml"),
+                
+                // Specific deployment path
+                Path.Combine("D:", "Sites", "site23065", "wwwroot", "FaceRecognition", "haarcascade_frontalface_default.xml")
+            };
+            
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                {
+                    _logger.LogInformation("Found face detector XML at: {Path}", path);
+                    return path;
+                }
+            }
+            
+            // If not found, try to extract from embedded resources
+            try
+            {
+                string tempDir = Path.Combine(_environment.ContentRootPath, "TempFaceDetection");
+                Directory.CreateDirectory(tempDir);
+                string tempFile = Path.Combine(tempDir, "haarcascade_frontalface_default.xml");
+                
+                // Check if we already extracted it
+                if (File.Exists(tempFile))
+                {
+                    return tempFile;
+                }
+                
+                // Try to copy from OpenCV's default installation locations
+                var opencvPaths = new[]
+                {
+                    @"C:\opencv\etc\haarcascades\haarcascade_frontalface_default.xml",
+                    @"C:\Program Files\opencv\etc\haarcascades\haarcascade_frontalface_default.xml",
+                    @"C:\Program Files (x86)\opencv\etc\haarcascades\haarcascade_frontalface_default.xml"
+                };
+                
+                foreach (var path in opencvPaths)
+                {
+                    if (File.Exists(path))
+                    {
+                        File.Copy(path, tempFile, true);
+                        return tempFile;
+                    }
+                }
+                
+                _logger.LogError("Could not find face detector XML file in any location");
+                throw new FileNotFoundException("Could not find haarcascade_frontalface_default.xml");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resolving face detector path");
+                throw;
+            }
         }
 
         public async Task<Result<Guid?>> FindMatchingFaceAsync(IFormFile imageFile)
