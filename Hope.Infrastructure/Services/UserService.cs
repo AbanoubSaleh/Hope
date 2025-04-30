@@ -1,5 +1,6 @@
 using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
+using Hope.Application.LookUps.Dtos;
 using Hope.Application.MissingPerson.DTOs;
 using Hope.Application.Users.DTOs;
 using Hope.Domain.Entities;
@@ -39,7 +40,7 @@ namespace Hope.Infrastructure.Services
         {
             try
             {
-                var user = await _userManager.FindByIdAsync(userId);
+                var user = await _context.Users.Include(user => user.Government).FirstOrDefaultAsync(x=>x.Id == userId);
                 if (user == null || user.IsDeleted)
                 {
                     return Result<UserProfileDto>.Failure("User not found");
@@ -77,7 +78,7 @@ namespace Hope.Infrastructure.Services
                     PhoneNumber = user.PhoneNumber,
                     ProfileImageUrl = user.ProfileImageUrl,
                     CreatedAt = user.CreatedAt,
-                    GovernmentName = user.Government?.NameEn,
+                    Government = GovernmentDto.FromEntity(user.Government!),
                     Reports = reportDtos
                 };
 

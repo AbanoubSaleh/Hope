@@ -1,3 +1,4 @@
+using Hope.Application.LookUps.Dtos;
 using Hope.Application.MissingPerson.DTOs;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace Hope.Application.Users.DTOs
         public string? PhoneNumber { get; set; }
         public string? ProfileImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string? GovernmentName { get; set; }
+        public GovernmentDto? Government { get; set; }
         public List<ReportDto> Reports { get; set; } = new List<ReportDto>();
     }
 }

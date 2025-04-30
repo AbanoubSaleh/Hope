@@ -16,12 +16,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+#region Cloudinary
 builder.Services.AddSingleton(new Cloudinary(new Account(
     "dmijfuun4",
     "879857692416225",
     "znf_0MgUCA9cg9-FxkdTrcugb7M"
 )));
+#endregion
 
+#region Cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
@@ -32,7 +36,9 @@ builder.Services.AddCors(options =>
 
     });
 });
+#endregion
 
+#region localization
 // Add localization services
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -48,7 +54,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 });
+#endregion
 
+#region Swagger
 //================== Swagger =====================================
 builder.Services.AddSwaggerGen(options =>
 {
@@ -92,21 +100,30 @@ builder.Services.AddSwaggerGen(options =>
 
 });
 
+#endregion
+
+
 // Add Infrastructure services
 builder.Services.AddInfrastructure(builder.Configuration);
-// Add this line in your service registration
+// we need this line to acess the user to get it's id 
 builder.Services.AddHttpContextAccessor();
+
+#region MediatR
 // Add MediatR
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(RegisterCommand).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
+#endregion
+
+#region FluentValidation
 
 // Add FluentValidation
 builder.Services.AddFluentValidationAutoValidation(config => {
     config.DisableDataAnnotationsValidation = true;
 });
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterCommandValidator>();
+#endregion
 
 
 var app = builder.Build();
@@ -131,12 +148,14 @@ app.UseMiddleware<Hope.Api.Middleware.ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+#region seed intail data to the database
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Make sure to await this call
+        // Make sure to await this call to ensure the database is seeded before the application starts
         await ApplicationDbContextSeed.SeedDefaultUserAsync(services, app.Configuration);
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("Database seeding completed successfully.");
@@ -147,6 +166,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+#endregion
 
 app.MapControllers();
 
