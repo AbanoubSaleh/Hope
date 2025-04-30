@@ -13,7 +13,6 @@ namespace Hope.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] 
     public class LookupController : ControllerBase
     {
         private readonly ILookupService _lookupService;

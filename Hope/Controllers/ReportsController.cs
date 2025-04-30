@@ -1,20 +1,21 @@
+using Hope.Application.Common.Interfaces;
 using Hope.Application.Common.Models;
 using Hope.Application.MissingPerson.Commands.CreateMissingPersonReport;
 using Hope.Application.MissingPerson.Commands.DeleteReport;
 using Hope.Application.MissingPerson.Commands.HideReport;
 using Hope.Application.MissingPerson.Commands.UpdateMissingPersonReport;
 using Hope.Application.MissingPerson.DTOs;
+using Hope.Application.MissingPerson.Queries.FindReportByFace;
 using Hope.Application.MissingPerson.Queries.GetArchivedReports;
 using Hope.Application.MissingPerson.Queries.GetReportById;
 using Hope.Application.MissingPerson.Queries.GetReports;
 using Hope.Application.MissingPerson.Queries.GetReportsByMissingState;
-using Hope.Domain.Entities;
 using Hope.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hope.Api.Controllers
+namespace Hope.Controllers // Make sure this matches your actual namespace
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -184,7 +185,8 @@ namespace Hope.Api.Controllers
 
             return Ok(result);
         }
-        [HttpPut("reports/{id}/unhide")]
+
+        [HttpPut("{id}/unhide")]
         [ProducesResponseType(typeof(Result<bool>), 200)]
         [ProducesResponseType(typeof(Result), 400)]
         [ProducesResponseType(typeof(Result), 404)]
@@ -225,7 +227,7 @@ namespace Hope.Api.Controllers
         [ProducesResponseType(typeof(Result), 404)]
         public async Task<ActionResult<Result<bool>>> UpdateReport([FromForm] UpdateMissingPersonReportCommand command)
         {
-            
+
             var result = await _mediator.Send(command);
 
             if (!result.Succeeded)
@@ -236,7 +238,7 @@ namespace Hope.Api.Controllers
                 }
                 return BadRequest(result);
             }
-        
+
             return Ok(result);
         }
 

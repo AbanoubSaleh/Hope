@@ -82,8 +82,11 @@ namespace Hope.Infrastructure
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IMissingPersonService, MissingPersonService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
             // Add this to the ConfigureServices method
             services.AddScoped<IAdminService, AdminService>();
+            // Add this line in the AddInfrastructure method
+            services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
             return services;
         }
     }

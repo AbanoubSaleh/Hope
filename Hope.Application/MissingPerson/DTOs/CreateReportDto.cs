@@ -34,5 +34,7 @@ namespace Hope.Application.MissingPerson.DTOs
     {
         public string Path { get; set; } = null!;
         public bool IsForPerson { get; set; }
+        public string? CloudinaryUrl { get; set; }
+
     }
 }

@@ -15,13 +15,16 @@ namespace Hope.Application.MissingPerson.Commands.CreateMissingPersonReport
     {
         private readonly IMissingPersonService _missingPersonService;
         private readonly IFileStorageService _fileStorageService;
+        private readonly ICloudinaryService _cloudinaryService;
 
         public CreateMissingPersonReportCommandHandler(
             IMissingPersonService missingPersonService,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            ICloudinaryService cloudinaryService)
         {
             _missingPersonService = missingPersonService;
             _fileStorageService = fileStorageService;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<Result<Guid>> Handle(CreateMissingPersonReportCommand request, CancellationToken cancellationToken)
@@ -73,17 +76,23 @@ namespace Hope.Application.MissingPerson.Commands.CreateMissingPersonReport
                     // Set custom filename with just the report ID and extension
                     string customFilename = $"{reportId}{Path.GetExtension(request.Image.FileName)}";
                     
+                    // Save to local storage as before
                     var fileResult = await _fileStorageService.SaveFileAsync(
                         request.Image, 
                         folderName,
                         customFilename);
+                    
+                    // Also upload to Cloudinary
+                    var cloudinaryResult = await _cloudinaryService.UploadImageAsync(
+                        request.Image,
+                        $"reports-images");
                         
                     if (fileResult.Succeeded)
                     {
                         var imageDto = new ImageDto 
                         { 
                             Path = fileResult.Data, 
-                            IsForPerson = request.ReportSubjectType == Hope.Domain.Enums.ReportSubjectType.Person 
+                            IsForPerson = request.ReportSubjectType == Hope.Domain.Enums.ReportSubjectType.Person
                         };
                         
                         // Update the report with the image
